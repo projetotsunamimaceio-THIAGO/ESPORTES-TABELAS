@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"><title>Equipes - Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body{background:#050505;color:white;font-family:sans-serif;}.glass{background:rgba(255,255,255,0.03);border:1px solid rgba(191,149,63,0.2);}</style>
+</head>
+<body class="p-6 flex flex-col items-center">
+    <div class="max-w-md w-full">
+        <a href="index.html" style="color:#bf953f">← Voltar</a>
+        <div class="glass p-8 rounded-3xl mt-6">
+            <h2 class="text-2xl font-bold mb-6 uppercase tracking-wider">Nova <span style="color:#bf953f">Equipe</span></h2>
+            <input type="text" id="eqNome" placeholder="Nome do Time" class="w-full bg-black border border-amber-500/30 p-4 rounded-xl mb-4 outline-none text-white">
+            <label class="text-xs uppercase text-slate-500">Cor do Escudo</label>
+            <input type="color" id="eqCor" value="#bf953f" class="w-full h-12 bg-transparent border-none cursor-pointer mb-4">
+            <button onclick="salvar()" id="btn" class="w-full bg-[#bf953f] text-black font-bold p-4 rounded-xl uppercase">Salvar Equipe</button>
+        </div>
+    </div>
+    <script>
+        const URL = "https://script.google.com/macros/s/AKfycbwS6YpnBBgOmrvagK7KcQ9qZGQZCsemOyVAEFxreOdNiN1C64E0oE6eFlDGibrC7FXl/exec";
+        async function salvar() {
+            const n = document.getElementById('eqNome').value;
+            const c = document.getElementById('eqCor').value;
+            if(!n) return;
+            document.getElementById('btn').innerText = "Processando...";
+            await fetch(URL, {method:'POST', mode:'no-cors', body:JSON.stringify({aba:'equipes', valores:[n, c]})});
+            alert("Equipe salva!");
+            location.reload();
+        }
+    </script>
+</body>
+</html>

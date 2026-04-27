@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"><title>Jogadores - Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body{background:#050505;color:white;font-family:sans-serif;}.glass{background:rgba(255,255,255,0.03);border:1px solid rgba(191,149,63,0.2);}</style>
+</head>
+<body class="p-6 flex flex-col items-center">
+    <div class="max-w-md w-full">
+        <a href="index.html" style="color:#bf953f">← Voltar</a>
+        <div class="glass p-8 rounded-3xl mt-6">
+            <h2 class="text-2xl font-bold mb-6 uppercase tracking-wider">Inscritos <span style="color:#bf953f">Atleta</span></h2>
+            <input type="text" id="jNome" placeholder="Nome do Atleta" class="w-full bg-black border border-amber-500/30 p-4 rounded-xl mb-4 outline-none text-white">
+            <input type="text" id="jEquipe" placeholder="Nome da Equipe" class="w-full bg-black border border-amber-500/30 p-4 rounded-xl mb-6 outline-none text-white">
+            <button onclick="salvar()" id="btn" class="w-full bg-[#bf953f] text-black font-bold p-4 rounded-xl uppercase">Finalizar</button>
+        </div>
+    </div>
+    <script>
+        const URL = "https://script.google.com/macros/s/AKfycbwS6YpnBBgOmrvagK7KcQ9qZGQZCsemOyVAEFxreOdNiN1C64E0oE6eFlDGibrC7FXl/exec";
+        async function salvar() {
+            const n = document.getElementById('jNome').value;
+            const e = document.getElementById('jEquipe').value;
+            if(!n || !e) return;
+            document.getElementById('btn').innerText = "Enviando...";
+            await fetch(URL, {method:'POST', mode:'no-cors', body:JSON.stringify({aba:'jogadores', valores:[n, e]})});
+            alert("Inscrição realizada!");
+            location.reload();
+        }
+    </script>
+</body>
+</html>

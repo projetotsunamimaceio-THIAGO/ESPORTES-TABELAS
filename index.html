@@ -2,336 +2,54 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARENA SUMMER TABELAS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torneio Master - Elite Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f4f4f9; --card: #ffffff; --text: #333; --border: #ddd; --primary: #1e88e5; }
-        body.dark-mode { --bg: #020617; --card: #0b1120; --text: #f8fafc; --border: #1e293b; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); transition: 0.3s; padding-bottom: 50px; }
-        header { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; padding: 10px; }
-        .nav-scroll { display: flex; overflow-x: auto; gap: 10px; scrollbar-width: none; }
-        .nav-btn { background: none; border: 1px solid var(--border); color: var(--text); padding: 8px 15px; border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 13px; }
-        .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .container { max-width: 800px; margin: 15px auto; padding: 0 15px; }
-        .view { display: none; } .view.active { display: block; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; margin-top: 5px; }
-        .btn-blue { background: var(--primary); color: white; }
-        .btn-dark { background: #334155; color: white; margin-top: 10px; }
-        .match { border-bottom: 1px solid var(--border); padding: 10px 0; }
-        .match-grid { display: grid; grid-template-columns: 1fr 45px 10px 45px 1fr; align-items: center; gap: 5px; }
-        .match-meta { font-size: 11px; color: var(--primary); margin-bottom: 5px; font-weight: bold; }
-        .score { text-align: center; font-weight: bold; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 5px; border-radius: 4px; }
-        .shield { width: 12px; height: 12px; display: inline-block; border-radius: 50%; margin: 0 5px; border: 1px solid #fff; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
-        th { background: rgba(0,0,0,0.05); padding: 8px; color: var(--text); }
-        td { padding: 8px 4px; border-bottom: 1px solid var(--border); text-align: center; }
-        .txt-left { text-align: left !important; }
-        .pts-col { font-weight: bold; color: var(--primary); }
+        body { font-family: 'Poppins', sans-serif; background-color: #050505; color: #ffffff; }
+        .gold-gradient { background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(191, 149, 63, 0.2); transition: all 0.4s ease; }
+        .glass-card:hover { background: rgba(191, 149, 63, 0.1); border: 1px solid rgba(191, 149, 63, 0.6); transform: translateY(-5px); }
+        .bg-glow { position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; height: 600px; background: radial-gradient(circle, rgba(191, 149, 63, 0.1) 0%, rgba(0,0,0,0) 70%); z-index: -1; }
     </style>
 </head>
-<body class="dark-mode">
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+    <div class="bg-glow"></div>
+    <div class="max-w-5xl w-full">
+        <header class="text-center mb-12">
+            <i class="fas fa-trophy text-5xl text-[#bf953f] mb-4"></i>
+            <h1 class="text-5xl font-extrabold uppercase tracking-tighter">TORNEIO <span class="gold-gradient">MASTER</span></h1>
+            <p class="text-slate-400 mt-2 tracking-[0.2em] text-xs uppercase">Elite Management System</p>
+        </header>
 
-<header>
-    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h1 style="font-size: 16px;">ARENA SUMMER</h1>
-        <button class="nav-btn" onclick="toggleDarkMode()">🌓 Modo Noturno</button>
-    </div>
-    <div class="nav-scroll">
-        <button class="nav-btn active" onclick="tab(this, 'v-reg')">Inscrição</button>
-        <button class="nav-btn" onclick="tab(this, 'v-teams')">Equipes</button>
-        <button class="nav-btn" onclick="tab(this, 'v-gen')">Gerar Tabela</button>
-        <button class="nav-btn" onclick="tab(this, 'v-free')">Tabela Livre</button>
-        <button class="nav-btn" onclick="tab(this, 'v-open')">Abrir Tabelas</button>
-    </div>
-</header>
-
-<div class="container">
-    <div id="v-reg" class="view active">
-        <div class="card">
-            <h2>📝 Cadastro</h2>
-            <input type="text" id="reg-n" placeholder="Nome da Equipe">
-            <select id="reg-m">
-                <option value="futsal-sub14">Futsal Sub-14</option>
-                <option value="futsal-acima15">Futsal Acima 15</option>
-                <option value="queimada">Queimada Misto</option>
-                <option value="voleibol">Voleibol Misto</option>
-            </select>
-            <label>Cor do Escudo:</label>
-            <input type="color" id="reg-c" value="#1e88e5">
-            <textarea id="reg-p" rows="3" placeholder="Nomes (um por linha)"></textarea>
-            <button class="btn btn-blue" onclick="saveTeam()">Salvar Equipe</button>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="esportes.html" class="glass-card p-8 rounded-3xl text-center">
+                <i class="fas fa-running text-3xl text-[#bf953f] mb-4"></i>
+                <h3 class="text-lg font-bold uppercase tracking-wider">Esportes</h3>
+            </a>
+            <a href="equipes.html" class="glass-card p-8 rounded-3xl text-center">
+                <i class="fas fa-shield-alt text-3xl text-[#bf953f] mb-4"></i>
+                <h3 class="text-lg font-bold uppercase tracking-wider">Equipes</h3>
+            </a>
+            <a href="jogadores.html" class="glass-card p-8 rounded-3xl text-center">
+                <i class="fas fa-user-friends text-3xl text-[#bf953f] mb-4"></i>
+                <h3 class="text-lg font-bold uppercase tracking-wider">Jogadores</h3>
+            </a>
+            <a href="tabela.html" class="glass-card p-8 rounded-3xl text-center">
+                <i class="fas fa-calendar-alt text-3xl text-[#bf953f] mb-4"></i>
+                <h3 class="text-lg font-bold uppercase tracking-wider">Tabela de Jogos</h3>
+            </a>
+            <a href="confrontos.html" class="glass-card p-8 rounded-3xl text-center">
+                <i class="fas fa-sitemap text-3xl text-[#bf953f] mb-4"></i>
+                <h3 class="text-lg font-bold uppercase tracking-wider">Confrontos</h3>
+            </a>
+            <a href="config.html" class="glass-card p-8 rounded-3xl text-center">
+                <i class="fas fa-cogs text-3xl text-[#bf953f] mb-4"></i>
+                <h3 class="text-lg font-bold uppercase tracking-wider">Configurações</h3>
+            </a>
         </div>
     </div>
-
-    <div id="v-teams" class="view">
-        <div id="out-teams"></div>
-    </div>
-
-    <div id="v-gen" class="view">
-        <div class="card">
-            <h2>🏆 Configurar Torneio</h2>
-            <select id="gen-m">
-                <option value="futsal-sub14">Futsal Sub-14</option>
-                <option value="futsal-acima15">Futsal Acima 15</option>
-                <option value="queimada">Queimada Misto</option>
-                <option value="voleibol">Voleibol Misto</option>
-            </select>
-            <select id="gen-t">
-                <option value="liga">Liga (Todos contra todos)</option>
-                <option value="liga5">Liga (Apenas 5 partidas)</option>
-                <option value="copa">Copa (Mata-Mata)</option>
-            </select>
-            <div style="display:flex; gap:10px">
-                <div><label>Data Início</label><input type="date" id="gen-d"></div>
-                <div><label>Hora Início</label><input type="time" id="gen-h" value="08:00"></div>
-            </div>
-            <div style="display:flex; gap:10px">
-                <div><label>Tempo Jogo (min)</label><input type="number" id="gen-tj" value="15"></div>
-                <div><label>Intervalo (min)</label><input type="number" id="gen-i" value="5"></div>
-            </div>
-            <button class="btn btn-blue" onclick="generate()">Gerar Jogos Equilibrados</button>
-        </div>
-        <div id="out-games"></div>
-        <div id="out-rank"></div>
-    </div>
-
-    <div id="v-free" class="view">
-        <div class="card">
-            <h2>✨ Tabela Sem Cadastro</h2>
-            <textarea id="free-txt" rows="4" placeholder="Equipe A&#10;Equipe B&#10;Equipe C"></textarea>
-            <button class="btn btn-blue" onclick="makeFree()">Gerar Jogos Livres</button>
-        </div>
-        <div id="out-free"></div>
-    </div>
-
-    <div id="v-open" class="view">
-        <div id="out-saved"></div>
-        <button class="btn btn-dark" onclick="resetAll()">🗑️ Apagar Tudo</button>
-    </div>
-</div>
-
-<script>
-    let db = JSON.parse(localStorage.getItem('ArenaSummer_Final')) || { teams: [], matches: [] };
-
-    function tab(b, id) {
-        document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
-        document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        document.getElementById(id).classList.add('active');
-        if(id === 'v-teams') renderTeams();
-        if(id === 'v-open') renderSaved();
-    }
-
-    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
-
-    function saveTeam() {
-        const name = document.getElementById('reg-n').value;
-        const mod = document.getElementById('reg-m').value;
-        const color = document.getElementById('reg-c').value;
-        const players = document.getElementById('reg-p').value.split('\n').filter(p => p.trim());
-        if(!name) return alert("Nome vazio!");
-        db.teams.push({ name, mod, color, players });
-        localStorage.setItem('ArenaSummer_Final', JSON.stringify(db));
-        alert("Equipe Salva!");
-        document.getElementById('reg-n').value = ""; document.getElementById('reg-p').value = "";
-    }
-
-    function renderTeams() {
-        const out = document.getElementById('out-teams');
-        out.innerHTML = "<h2>Equipes</h2>";
-        db.teams.forEach((t, i) => {
-            out.innerHTML += `<div class="card"><span class="shield" style="background:${t.color}"></span> ${t.name} <small>(${t.mod})</small> <button onclick="delTeam(${i})" style="float:right; background:none; border:none; color:red;">X</button></div>`;
-        });
-    }
-
-    function delTeam(i) { db.teams.splice(i,1); localStorage.setItem('ArenaSummer_Final', JSON.stringify(db)); renderTeams(); }
-
-    function generate() {
-        const mod = document.getElementById('gen-m').value;
-        const type = document.getElementById('gen-t').value;
-        const date = document.getElementById('gen-d').value;
-        const time = document.getElementById('gen-h').value;
-        const duration = parseInt(document.getElementById('gen-tj').value) || 15;
-        const interval = parseInt(document.getElementById('gen-i').value) || 5;
-        const teams = db.teams.filter(t => t.mod === mod);
-        
-        if(teams.length < 2) return alert("Mínimo 2 equipes!");
-        if(!date) return alert("Selecione a data!");
-
-        let games = [];
-        if(type === 'copa') {
-            for(let i=0; i<teams.length; i+=2) { if(teams[i+1]) games.push({t1: teams[i], t2: teams[i+1]}); }
-        } else {
-            // Algoritmo de Berger para equilíbrio de mando
-            let list = [...teams];
-            if (list.length % 2 !== 0) list.push({ name: "FOLGA", color: "#666", isGhost: true });
-            let rounds = list.length - 1;
-            let half = list.length / 2;
-
-            for (let r = 0; r < rounds; r++) {
-                for (let i = 0; i < half; i++) {
-                    let t1 = list[i];
-                    let t2 = list[list.length - 1 - i];
-                    if (!t1.isGhost && !t2.isGhost) {
-                        // Alterna mandante e visitante baseado na rodada
-                        r % 2 === 0 ? games.push({t1, t2}) : games.push({t1: t2, t2: t1});
-                    }
-                }
-                list.splice(1, 0, list.pop());
-            }
-            games.sort(() => Math.random() - 0.5);
-            if(type === 'liga5') games = games.slice(0, 5);
-        }
-
-        let current = new Date(`${date}T${time}`);
-        games.forEach(g => {
-            g.hora = current.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            g.dia = date.split('-').reverse().join('/');
-            g.s1 = 0; g.s2 = 0;
-            current.setMinutes(current.getMinutes() + duration + interval);
-        });
-
-        renderTable(games, 'out-games', mod, true);
-    }
-
-    function renderTable(games, target, mod, isNew = false) {
-        let h = `<div class="card"><h3>Jogos - ${mod}</h3>`;
-        games.forEach((g, i) => {
-            h += `<div class="match">
-                <div class="match-meta">📅 ${g.dia} - ⏰ ${g.hora}</div>
-                <div class="match-grid">
-                    <div style="text-align:right" class="t1-n"><span class="shield" style="background:${g.t1.color}"></span>${g.t1.name}</div>
-                    <input type="number" class="score s1" value="${g.s1}" oninput="updateLiveScore(this, ${i}, 1, '${target}', '${mod}')">
-                    <span>x</span>
-                    <input type="number" class="score s2" value="${g.s2}" oninput="updateLiveScore(this, ${i}, 2, '${target}', '${mod}')">
-                    <div class="t2-n">${g.t2.name}<span class="shield" style="background:${g.t2.color}"></span></div>
-                </div>
-            </div>`;
-        });
-        if(isNew) h += `<button class="btn btn-blue" onclick="saveCurrentTable('${mod}')">💾 Salvar Tabela</button></div>`;
-        document.getElementById(target).innerHTML = h;
-        calc(mod, target);
-    }
-
-    function updateLiveScore(el, gIdx, sNum, target, mod) {
-        if(target === 'out-saved') {
-            const container = el.closest('.saved-container');
-            const tIdx = container.dataset.index;
-            db.matches[tIdx].games[gIdx]['s'+sNum] = parseInt(el.value) || 0;
-            localStorage.setItem('ArenaSummer_Final', JSON.stringify(db));
-            calc(mod, 'out-saved', tIdx);
-        } else {
-            calc(mod, target);
-        }
-    }
-
-    function calc(mod, target, tIdx = null) {
-        let stats = {};
-        const isVolei = mod.includes('voleibol');
-        const isQueimada = mod.includes('queimada');
-        
-        const container = tIdx !== null ? document.querySelectorAll('.saved-container')[tIdx] : document.getElementById(target);
-        if(!container) return;
-        const matches = container.querySelectorAll('.match');
-
-        matches.forEach(m => {
-            const n1 = m.querySelector('.t1-n').innerText.trim();
-            const n2 = m.querySelector('.t2-n').innerText.trim();
-            const s1 = parseInt(m.querySelector('.s1').value) || 0;
-            const s2 = parseInt(m.querySelector('.s2').value) || 0;
-
-            if(!stats[n1]) stats[n1] = { pts:0, pj:0, v:0, e:0, d:0, gp:0, gc:0, sg:0 };
-            if(!stats[n2]) stats[n2] = { pts:0, pj:0, v:0, e:0, d:0, gp:0, gc:0, sg:0 };
-
-            stats[n1].pj++; stats[n2].pj++;
-            stats[n1].gp += s1; stats[n1].gc += s2;
-            stats[n2].gp += s2; stats[n2].gc += s1;
-            stats[n1].sg = stats[n1].gp - stats[n1].gc;
-            stats[n2].sg = stats[n2].gp - stats[n2].gc;
-
-            if(s1 > s2) { 
-                stats[n1].pts += (isVolei ? 5 : 3); stats[n1].v++; stats[n2].d++; 
-                if(isQueimada || isVolei) stats[n2].pts += 1;
-            } else if(s2 > s1) { 
-                stats[n2].pts += (isVolei ? 5 : 3); stats[n2].v++; stats[n1].d++; 
-                if(isQueimada || isVolei) stats[n1].pts += 1;
-            } else if(s1 === s2 && !isVolei && !isQueimada) { 
-                stats[n1].pts += 1; stats[n2].pts += 1; stats[n1].e++; stats[n2].e++; 
-            }
-        });
-
-        let sorted = Object.keys(stats).map(n => ({name: n, ...stats[n]})).sort((a,b) => b.pts - a.pts || b.sg - a.sg);
-        let labelP = isVolei ? 'SP' : (isQueimada ? 'QP' : 'GP');
-        let labelC = isVolei ? 'SC' : (isQueimada ? 'QC' : 'GC');
-        let labelS = isVolei ? 'SS' : (isQueimada ? 'SQ' : 'SG');
-
-        let h = `<div class="card"><h3>Classificação Atual</h3><table>
-            <tr><th class="txt-left">Equipe</th><th>PTS</th><th>PJ</th><th>V</th><th>${labelP}</th><th>${labelC}</th><th>${labelS}</th></tr>`;
-        sorted.forEach(t => {
-            h += `<tr><td class="txt-left">${t.name}</td><td class="pts-col">${t.pts}</td><td>${t.pj}</td><td>${t.v}</td><td>${t.gp}</td><td>${t.gc}</td><td>${t.sg}</td></tr>`;
-        });
-        
-        const rankDiv = tIdx !== null ? container.querySelector('.rank-box') : document.getElementById('out-rank');
-        if(rankDiv) rankDiv.innerHTML = h + `</table></div>`;
-    }
-
-    function saveCurrentTable(mod) {
-        const games = [];
-        document.querySelectorAll('#out-games .match').forEach(m => {
-            games.push({
-                dia: m.querySelector('.match-meta').innerText.split(' - ')[0].replace('📅 ', ''),
-                hora: m.querySelector('.match-meta').innerText.split(' - ')[1].replace('⏰ ', ''),
-                t1: { name: m.querySelector('.t1-n').innerText.trim(), color: m.querySelector('.shield').style.backgroundColor },
-                t2: { name: m.querySelector('.t2-n').innerText.trim(), color: m.querySelectorAll('.shield')[1].style.backgroundColor },
-                s1: m.querySelector('.s1').value,
-                s2: m.querySelector('.s2').value
-            });
-        });
-        db.matches.push({ mod, date: new Date().toLocaleString(), games });
-        localStorage.setItem('ArenaSummer_Final', JSON.stringify(db));
-        alert("Tabela Salva!");
-    }
-
-    function renderSaved() {
-        const out = document.getElementById('out-saved');
-        out.innerHTML = "<h2>Tabelas Salvas (Editáveis)</h2>";
-        db.matches.forEach((m, i) => {
-            let h = `<div class="saved-container" data-index="${i}">
-                <div class="card" style="background:var(--primary); color:white;"><strong>${m.mod} - ${m.date}</strong></div>`;
-            m.games.forEach((g, gi) => {
-                h += `<div class="match card">
-                    <div class="match-meta">📅 ${g.dia} - ⏰ ${g.hora}</div>
-                    <div class="match-grid">
-                        <div style="text-align:right" class="t1-n"><span class="shield" style="background:${g.t1.color}"></span>${g.t1.name}</div>
-                        <input type="number" class="score s1" value="${g.s1}" oninput="updateLiveScore(this, ${gi}, 1, 'out-saved', '${m.mod}')">
-                        <span>x</span>
-                        <input type="number" class="score s2" value="${g.s2}" oninput="updateLiveScore(this, ${gi}, 2, 'out-saved', '${m.mod}')">
-                        <div class="t2-n">${g.t2.name}<span class="shield" style="background:${g.t2.color}"></span></div>
-                    </div>
-                </div>`;
-            });
-            h += `<div class="rank-box"></div><button class="btn btn-dark" onclick="deleteTable(${i})">Excluir Tabela</button></div><hr>`;
-            out.innerHTML += h;
-            calc(m.mod, 'out-saved', i);
-        });
-    }
-
-    function deleteTable(i) { if(confirm("Apagar esta tabela?")) { db.matches.splice(i,1); localStorage.setItem('ArenaSummer_Final', JSON.stringify(db)); renderSaved(); } }
-
-    function makeFree() {
-        const names = document.getElementById('free-txt').value.split('\n').filter(n => n.trim());
-        let games = [];
-        for(let i=0; i<names.length; i++) {
-            if(names[i+1]) games.push({t1:{name:names[i], color:'#444'}, t2:{name:names[i+1], color:'#444'}, dia:'--', hora:'--', s1:0, s2:0});
-        }
-        renderTable(games, 'out-free', 'Livre');
-    }
-
-    function resetAll() { if(confirm("Apagar tudo?")) { localStorage.clear(); location.reload(); } }
-</script>
-
 </body>
 </html>
