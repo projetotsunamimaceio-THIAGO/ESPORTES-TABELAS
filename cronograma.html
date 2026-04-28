@@ -79,6 +79,38 @@
         .btn-cores { background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3); }
         .btn-cores:hover { background:rgba(168,85,247,0.3); }
 
+        /* --- CARD INTERVALO --- */
+        .intervalo-card {
+            position: relative;
+            padding-left: 2rem;
+            border-left: 2px solid rgba(14,165,233,0.3);
+            margin-bottom: 1.5rem;
+        }
+        .intervalo-card::before {
+            content: '';
+            position: absolute;
+            left: -7px; top: 8px;
+            width: 12px; height: 12px;
+            background: #0ea5e9;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #0ea5e9;
+        }
+        .intervalo-inner {
+            background: rgba(14,165,233,0.06);
+            border: 1px solid rgba(14,165,233,0.2);
+            border-radius: 16px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .intervalo-hora { font-size: 1.2rem; font-weight: 900; color: #38bdf8; line-height: 1; }
+        .intervalo-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: #38bdf8; background: rgba(14,165,233,0.15); border: 1px solid rgba(14,165,233,0.3); padding: 3px 10px; border-radius: 4px; }
+        .intervalo-duracao { font-size: 11px; color: #64748b; font-weight: 600; }
+        .btn-del-intervalo { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25); border-radius: 6px; font-size: 10px; padding: 4px 8px; cursor: pointer; }
+        .btn-del-intervalo:hover { background: rgba(239,68,68,0.3); }
+
         /* --- NOVOS ESTILOS PARA O MODO EVENTO GERAL --- */
         .btn-evento-geral { 
             background: transparent; color: #fbbf24; border: 2px solid #fbbf24; 
@@ -130,6 +162,9 @@
         <div class="flex gap-3 mb-6 flex-wrap items-center">
             <button onclick="abrirModalAddJogo()" class="btn-acao" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);">
                 <i class="fas fa-plus mr-1"></i> Adicionar Jogo
+            </button>
+            <button onclick="abrirModalIntervalo()" class="btn-acao" style="background:rgba(14,165,233,0.12);color:#38bdf8;border:1px solid rgba(14,165,233,0.3);">
+                <i class="fas fa-coffee mr-1"></i> Intervalo
             </button>
             <button onclick="toggleSaltados()" class="btn-acao" style="background:rgba(100,116,139,0.15);color:#94a3b8;border:1px solid rgba(100,116,139,0.3);">
                 <i class="fas fa-eye mr-1"></i> <span id="txtToggleSaltados">Mostrar Saltados</span>
@@ -220,6 +255,39 @@
         </div>
     </div>
 
+    <!-- Modal Intervalo -->
+    <div id="modalIntervalo" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-xl font-black uppercase tracking-tighter mb-6 italic" style="color:#38bdf8">
+                <i class="fas fa-coffee mr-2"></i>Adicionar Intervalo
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Data</label>
+                    <input type="date" id="intData" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-sky-500/30 text-white">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Horário de Início</label>
+                    <input type="time" id="intHora" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-sky-500/30 text-white">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Duração (minutos)</label>
+                    <input type="number" id="intDuracao" min="5" max="120" value="30" placeholder="30" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-sky-500/30 text-white text-center font-bold text-lg">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Descrição (opcional)</label>
+                    <input type="text" id="intDesc" placeholder="ex: Almoço, Descanso..." class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-sky-500/30 text-white">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="fecharModalIntervalo()" class="flex-1 py-3 rounded-xl bg-slate-800 text-white text-xs font-bold uppercase">Cancelar</button>
+                <button onclick="confirmarIntervalo()" class="flex-1 py-3 rounded-xl text-black text-xs font-bold uppercase" style="background:linear-gradient(to right,#0284c7,#38bdf8)">
+                    <i class="fas fa-check mr-1"></i> Adicionar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const URL_GS = "https://script.google.com/macros/s/AKfycbxiJPnyx4kC51xJCL26LoPkSumLkE8rHAn4f6DbF66Acy2dLiZbp_-JZjhYJSv6jXQa/exec";
 
@@ -227,7 +295,8 @@
         let jogosGlobal = [];
         let dadosGlobais = {};
         let mostrarSaltados = false;
-        let modoEventoGeral = false; // Controle da nova visualização
+        let modoEventoGeral = false;
+        let intervalosGlobal = []; // Intervalos visuais (não salvos na planilha)
 
         function toggleModoEventoGeral() {
             modoEventoGeral = !modoEventoGeral;
@@ -410,6 +479,62 @@
 
         function fecharModalCores() { document.getElementById('modalCores').classList.remove('ativo'); }
 
+        // --- SISTEMA DE INTERVALOS ---
+        function abrirModalIntervalo() {
+            // Pré-preencher com a data de hoje
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('intData').value = hoje;
+            document.getElementById('intHora').value = '';
+            document.getElementById('intDuracao').value = 30;
+            document.getElementById('intDesc').value = '';
+            document.getElementById('modalIntervalo').classList.add('ativo');
+        }
+
+        function fecharModalIntervalo() { document.getElementById('modalIntervalo').classList.remove('ativo'); }
+
+        function confirmarIntervalo() {
+            const data = document.getElementById('intData').value;
+            const hora = document.getElementById('intHora').value;
+            const duracao = parseInt(document.getElementById('intDuracao').value) || 30;
+            const desc = document.getElementById('intDesc').value.trim() || 'Intervalo';
+
+            if (!data || !hora) { alert('Preencha a data e o horário!'); return; }
+
+            intervalosGlobal.push({ id: Date.now(), data, hora, duracao, desc });
+            fecharModalIntervalo();
+            aplicarFiltro();
+        }
+
+        function removerIntervalo(id) {
+            intervalosGlobal = intervalosGlobal.filter(i => i.id !== id);
+            aplicarFiltro();
+        }
+
+        function gerarHtmlIntervalo(intv) {
+            // Calcular hora de término
+            const [h, m] = intv.hora.split(':').map(Number);
+            const totalMin = h * 60 + m + intv.duracao;
+            const hFim = String(Math.floor(totalMin / 60) % 24).padStart(2, '0');
+            const mFim = String(totalMin % 60).padStart(2, '0');
+            const label = intv.desc !== 'Intervalo' ? intv.desc : 'Intervalo';
+
+            return `
+                <div class="intervalo-card">
+                    <div class="intervalo-inner">
+                        <div class="flex items-center gap-4">
+                            <div class="intervalo-hora">${intv.hora}</div>
+                            <div>
+                                <div class="intervalo-label"><i class="fas fa-coffee mr-1"></i>${label}</div>
+                                <div class="intervalo-duracao mt-1">até ${hFim}:${mFim} &nbsp;·&nbsp; ${intv.duracao} min</div>
+                            </div>
+                        </div>
+                        <button class="btn-del-intervalo" onclick="removerIntervalo(${intv.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>`;
+        }
+
 
         // --- NOVA FUNÇÃO PARA CALCULAR CLASSIFICAÇÃO EM TEMPO REAL ---
         function calcularClassificacao(jogos) {
@@ -521,6 +646,21 @@
                         return horaA.localeCompare(horaB);
                     });
 
+                    // Montar itens misturados: jogos + intervalos do dia
+                    const intervalosHoje = intervalosGlobal.filter(i => i.data === dk);
+                    const todosItens = [
+                        ...porData[dk].map(j => ({ tipo: 'jogo', hora: limparHora(j.dados[3]), dados: j })),
+                        ...intervalosHoje.map(i => ({ tipo: 'intervalo', hora: i.hora, dados: i }))
+                    ].sort((a, b) => {
+                        if (a.hora === '--:--') return 1;
+                        if (b.hora === '--:--') return -1;
+                        return a.hora.localeCompare(b.hora);
+                    });
+
+                    const itensHtml = todosItens.map(item =>
+                        item.tipo === 'jogo' ? gerarHtmlCard(item.dados) : gerarHtmlIntervalo(item.dados)
+                    ).join('');
+
                     html += `
                         <div class="mb-12 section-dia">
                             <div class="flex items-center gap-4 mb-8">
@@ -529,11 +669,30 @@
                                 <div class="h-[1px] flex-1 bg-white/10"></div>
                             </div>
                             <div class="space-y-3">
-                                ${porData[dk].map(j => gerarHtmlCard(j)).join('')}
+                                ${itensHtml}
                             </div>
                         </div>
                     `;
                 });
+
+                // Adicionar intervalos em datas sem jogos
+                const datasComJogos = new Set(Object.keys(porData));
+                const datasSoIntervalo = [...new Set(intervalosGlobal.map(i => i.data))].filter(d => !datasComJogos.has(d)).sort();
+                datasSoIntervalo.forEach(dk => {
+                    const itensHtml = intervalosGlobal.filter(i => i.data === dk)
+                        .sort((a,b) => a.hora.localeCompare(b.hora))
+                        .map(i => gerarHtmlIntervalo(i)).join('');
+                    html += `
+                        <div class="mb-12 section-dia">
+                            <div class="flex items-center gap-4 mb-8">
+                                <div class="h-[1px] flex-1 bg-white/10"></div>
+                                <h2 class="text-sm font-bold gold-text uppercase tracking-[0.3em] bg-black px-4 italic">${formatarDataExibicao(dk)}</h2>
+                                <div class="h-[1px] flex-1 bg-white/10"></div>
+                            </div>
+                            <div class="space-y-3">${itensHtml}</div>
+                        </div>`;
+                });
+
                 container.innerHTML = html || '<p class="text-center text-slate-500 py-20">Nenhum jogo para exibir.</p>';
             }
         }
