@@ -70,6 +70,15 @@
             50% { box-shadow: 0 0 15px 3px rgba(191,149,63,0.3); }
         }
 
+        /* --- MODAL DE CORES --- */
+        .mod-cor-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .mod-cor-row:last-child { border-bottom:none; }
+        .mod-cor-nome { flex:1; font-size:12px; font-weight:700; text-transform:uppercase; }
+        .preview-tag { font-size:9px; padding:3px 10px; border-radius:4px; font-weight:800; text-transform:uppercase; }
+        input[type="color"].cor-picker { width:40px; height:40px; border:none; border-radius:10px; cursor:pointer; padding:2px; background:transparent; }
+        .btn-cores { background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3); }
+        .btn-cores:hover { background:rgba(168,85,247,0.3); }
+
         /* --- NOVOS ESTILOS PARA O MODO EVENTO GERAL --- */
         .btn-evento-geral { 
             background: transparent; color: #fbbf24; border: 2px solid #fbbf24; 
@@ -129,6 +138,10 @@
                 <i class="fas fa-sync mr-1"></i> Atualizar
             </button>
 
+            <button onclick="abrirModalCores()" class="btn-acao btn-cores">
+                <i class="fas fa-palette mr-1"></i> Cores
+            </button>
+
             <button id="btnEventoGeral" onclick="toggleModoEventoGeral()" class="btn-evento-geral ml-auto">
                 VER EVENTO GERAL
             </button>
@@ -186,6 +199,23 @@
             <div class="flex gap-3 mt-6">
                 <button onclick="fecharModalAddJogo()" class="flex-1 py-3 rounded-xl bg-slate-800 text-white text-xs font-bold uppercase">Cancelar</button>
                 <button onclick="confirmarAddJogo()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-black text-xs font-bold uppercase">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cores das Modalidades -->
+    <div id="modalCores" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-xl font-black uppercase tracking-tighter mb-2 italic gold-text">
+                <i class="fas fa-palette mr-2"></i>Cores das Modalidades
+            </h3>
+            <p class="text-[10px] text-slate-500 mb-6 uppercase tracking-widest">Escolha uma cor para cada modalidade</p>
+            <div id="listaCoresModal"></div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="fecharModalCores()" class="flex-1 py-3 rounded-xl bg-slate-800 text-white text-xs font-bold uppercase">Fechar</button>
+                <button onclick="salvarCoresModal()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 text-white text-xs font-bold uppercase">
+                    <i class="fas fa-save mr-1"></i> Salvar Cores
+                </button>
             </div>
         </div>
     </div>
@@ -302,18 +332,84 @@
             return '';
         }
 
-        const PALETA = [
-            { bg:'rgba(191,149,63,0.18)', text:'#bf953f', border:'rgba(191,149,63,0.4)' },
-            { bg:'rgba(34,197,94,0.15)',  text:'#22c55e', border:'rgba(34,197,94,0.4)' },
-            { bg:'rgba(59,130,246,0.15)', text:'#60a5fa', border:'rgba(59,130,246,0.4)' }
+        // --- SISTEMA DE CORES PERSONALIZÁVEIS POR MODALIDADE ---
+        const PALETA_PADRAO = [
+            '#bf953f', '#22c55e', '#60a5fa', '#f87171', '#c084fc',
+            '#fb923c', '#34d399', '#f472b6', '#38bdf8', '#a3e635'
         ];
-        let mapaCores = {}; let contadorCores = 0;
+        let mapaCores = {};
+
+        function carregarCoresSalvas() {
+            try {
+                const salvas = localStorage.getItem('coresMod');
+                if (salvas) mapaCores = JSON.parse(salvas);
+            } catch(e) {}
+        }
+
+        function salvarCoresStorage() {
+            try { localStorage.setItem('coresMod', JSON.stringify(mapaCores)); } catch(e) {}
+        }
+
+        function hexParaRgba(hex, alpha) {
+            const r = parseInt(hex.slice(1,3),16);
+            const g = parseInt(hex.slice(3,5),16);
+            const b = parseInt(hex.slice(5,7),16);
+            return `rgba(${r},${g},${b},${alpha})`;
+        }
+
         function corDaModalidade(mod) {
             const k = String(mod || '').trim().toLowerCase();
-            if (!k) return PALETA[0];
-            if (!mapaCores[k]) { mapaCores[k] = PALETA[contadorCores % PALETA.length]; contadorCores++; }
-            return mapaCores[k];
+            if (!k) return { bg: hexParaRgba('#bf953f',0.18), text:'#bf953f', border: hexParaRgba('#bf953f',0.4) };
+            if (!mapaCores[k]) {
+                const idx = Object.keys(mapaCores).length % PALETA_PADRAO.length;
+                mapaCores[k] = PALETA_PADRAO[idx];
+                salvarCoresStorage();
+            }
+            const hex = mapaCores[k];
+            return { bg: hexParaRgba(hex, 0.18), text: hex, border: hexParaRgba(hex, 0.5) };
         }
+
+        // --- MODAL DE CORES ---
+        function abrirModalCores() {
+            const mods = [...new Set(jogosGlobal.map(j => String(j.dados[1]||'').trim()).filter(Boolean))];
+            const lista = document.getElementById('listaCoresModal');
+            lista.innerHTML = mods.map(m => {
+                const k = m.toLowerCase();
+                const cor = mapaCores[k] || PALETA_PADRAO[0];
+                return `
+                    <div class="mod-cor-row">
+                        <div class="mod-cor-nome">${m}</div>
+                        <span class="preview-tag" id="prev-${k}" style="background:${hexParaRgba(cor,0.18)};color:${cor};border:1px solid ${hexParaRgba(cor,0.5)}">${m}</span>
+                        <input type="color" class="cor-picker" value="${cor}" data-mod="${k}" 
+                            oninput="previewCor(this)" 
+                            onchange="previewCor(this)">
+                    </div>`;
+            }).join('');
+            document.getElementById('modalCores').classList.add('ativo');
+        }
+
+        function previewCor(input) {
+            const k = input.dataset.mod;
+            const cor = input.value;
+            const prev = document.getElementById('prev-' + k);
+            if (prev) {
+                prev.style.background = hexParaRgba(cor, 0.18);
+                prev.style.color = cor;
+                prev.style.border = `1px solid ${hexParaRgba(cor, 0.5)}`;
+            }
+        }
+
+        function salvarCoresModal() {
+            document.querySelectorAll('.cor-picker').forEach(input => {
+                mapaCores[input.dataset.mod] = input.value;
+            });
+            salvarCoresStorage();
+            fecharModalCores();
+            aplicarFiltro();
+        }
+
+        function fecharModalCores() { document.getElementById('modalCores').classList.remove('ativo'); }
+
 
         // --- NOVA FUNÇÃO PARA CALCULAR CLASSIFICAÇÃO EM TEMPO REAL ---
         function calcularClassificacao(jogos) {
@@ -555,6 +651,7 @@
 
         async function carregarCronograma() {
             try {
+                carregarCoresSalvas();
                 const res = await fetch(URL_GS); const data = await res.json(); dadosGlobais = data;
                 data.equipes.slice(1).forEach(l => { cacheEscudos[l[0]] = { cor1: l[2], cor2: l[3] || l[2], cor3: l[4] || l[2] }; });
                 jogosGlobal = data.tabela.slice(1).map((d, i) => ({ 
