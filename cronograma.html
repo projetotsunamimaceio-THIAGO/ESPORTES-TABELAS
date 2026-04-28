@@ -416,6 +416,15 @@
                 const datas = Object.keys(porData).sort();
                 let html = '';
                 datas.forEach(dk => {
+                    // Ordenar jogos do dia por horário
+                    porData[dk].sort((a, b) => {
+                        const horaA = limparHora(a.dados[3]);
+                        const horaB = limparHora(b.dados[3]);
+                        if (horaA === '--:--') return 1;
+                        if (horaB === '--:--') return -1;
+                        return horaA.localeCompare(horaB);
+                    });
+
                     html += `
                         <div class="mb-12 section-dia">
                             <div class="flex items-center gap-4 mb-8">
