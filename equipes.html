@@ -1,32 +1,163 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8"><title>Equipes - Master</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipes - Torneio Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body{background:#050505;color:white;font-family:sans-serif;}.glass{background:rgba(255,255,255,0.03);border:1px solid rgba(191,149,63,0.2);}</style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #000000; color: #ffffff; min-height: 100vh; }
+        .gold-text { color: #bf953f; }
+        .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(191,149,63,0.2); }
+        .btn-gold { background: linear-gradient(135deg, #bf953f, #b38728); color: black; font-weight: 800; transition: all 0.3s; }
+        .btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(191,149,63,0.4); }
+        input[type="text"], select { background: rgba(0,0,0,0.6) !important; border: 1px solid rgba(191,149,63,0.3) !important; color: white !important; outline: none; }
+        .color-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s; }
+        .color-dot:hover { transform: scale(1.2); }
+        .shield-preview { width: 50px; height: 65px; clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%); display: flex; background: #111; margin: 0 auto; }
+        .shield-master { width: 45px; height: 60px; clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%); display: flex; }
+        .shield-inner { flex: 1; display: flex; width: 100%; height: 100%; gap: 1px; }
+        .shield-column { flex: 1; height: 100%; }
+        .mod-section { border-left: 3px solid #bf953f; padding-left: 1rem; margin-bottom: 2.5rem; }
+    </style>
 </head>
-<body class="p-6 flex flex-col items-center">
-    <div class="max-w-md w-full">
-        <a href="index.html" style="color:#bf953f">← Voltar</a>
-        <div class="glass p-8 rounded-3xl mt-6">
-            <h2 class="text-2xl font-bold mb-6 uppercase tracking-wider">Nova <span style="color:#bf953f">Equipe</span></h2>
-            <input type="text" id="eqNome" placeholder="Nome do Time" class="w-full bg-black border border-amber-500/30 p-4 rounded-xl mb-4 outline-none text-white">
-            <label class="text-xs uppercase text-slate-500">Cor do Escudo</label>
-            <input type="color" id="eqCor" value="#bf953f" class="w-full h-12 bg-transparent border-none cursor-pointer mb-4">
-            <button onclick="salvar()" id="btn" class="w-full bg-[#bf953f] text-black font-bold p-4 rounded-xl uppercase">Salvar Equipe</button>
+<body class="p-4 md:p-10">
+    <div class="max-w-6xl mx-auto">
+        <a href="index.html" class="gold-text uppercase text-xs tracking-widest font-bold hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i> Painel
+        </a>
+
+        <div class="glass p-8 rounded-[2.5rem] mt-8 mb-10">
+            <h2 class="text-2xl font-black uppercase tracking-tighter mb-6 italic">CADASTRAR <span class="gold-text">EQUIPE</span></h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <input type="text" id="eqNome" placeholder="Nome da Equipe" class="w-full p-4 rounded-2xl">
+                    <select id="eqModalidade" class="w-full p-4 rounded-2xl"><option value="">Carregando...</option></select>
+                    <div class="grid grid-cols-3 gap-2 pt-4">
+                        <input type="color" id="manual1" value="#FF0000" oninput="atuManual(1, this.value)" class="w-full h-10 bg-transparent border-none cursor-pointer">
+                        <input type="color" id="manual2" value="#FFFFFF" oninput="atuManual(2, this.value)" class="w-full h-10 bg-transparent border-none cursor-pointer">
+                        <input type="color" id="manual3" value="#FF0000" oninput="atuManual(3, this.value)" class="w-full h-10 bg-transparent border-none cursor-pointer">
+                    </div>
+                </div>
+                <div class="bg-black/40 p-6 rounded-[2rem] border border-white/5">
+                    <div class="flex justify-around mb-4 text-center">
+                        <div class="shield-preview"><div id="pCol1" class="w-full h-full" style="background:#FF0000"></div></div>
+                        <div class="shield-preview"><div id="pCol2" class="w-full h-full" style="background:#FFFFFF"></div></div>
+                        <div class="shield-preview"><div id="pCol3" class="w-full h-full" style="background:#FF0000"></div></div>
+                    </div>
+                    <div id="paletaCores" class="grid grid-cols-5 gap-3 mb-4 justify-items-center"></div>
+                    <div class="flex justify-center gap-2">
+                        <button onclick="setTarget(1)" id="t1" class="text-[9px] bg-white/10 px-3 py-2 rounded-full gold-text border border-[#bf953f]">Esq</button>
+                        <button onclick="setTarget(2)" id="t2" class="text-[9px] bg-white/5 px-3 py-2 rounded-full text-slate-400">Meio</button>
+                        <button onclick="setTarget(3)" id="t3" class="text-[9px] bg-white/5 px-3 py-2 rounded-full text-slate-400">Dir</button>
+                    </div>
+                </div>
+            </div>
+            <button onclick="salvar()" id="btn" class="w-full btn-gold py-5 rounded-2xl uppercase text-sm tracking-widest mt-8">SALVAR EQUIPE</button>
+        </div>
+
+        <div id="containerModalidades">
+            <p class="text-slate-500 animate-pulse text-center">Organizando equipes...</p>
         </div>
     </div>
+
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbwS6YpnBBgOmrvagK7KcQ9qZGQZCsemOyVAEFxreOdNiN1C64E0oE6eFlDGibrC7FXl/exec";
-        async function salvar() {
-            const n = document.getElementById('eqNome').value;
-            const c = document.getElementById('eqCor').value;
-            if(!n) return;
-            document.getElementById('btn').innerText = "Processando...";
-            await fetch(URL, {method:'POST', mode:'no-cors', body:JSON.stringify({aba:'equipes', valores:[n, c]})});
-            alert("Equipe salva!");
-            location.reload();
+        const URL_GS = "https://script.google.com/macros/s/AKfycbxiJPnyx4kC51xJCL26LoPkSumLkE8rHAn4f6DbF66Acy2dLiZbp_-JZjhYJSv6jXQa/exec";
+        let cores = ['#FF0000', '#FFFFFF', '#FF0000'];
+        let activeT = 1;
+        const listaCores = ['#FF0000','#0000FF','#FFFFFF','#000000','#FFFF00','#008000','#FFA500','#800080','#FFC0CB','#00FFFF','#8B4513','#708090','#FFD700','#00FF00','#E6E6FA'];
+
+        function init() {
+            document.getElementById('paletaCores').innerHTML = listaCores.map(c =>
+                `<div class="color-dot" style="background:${c}" onclick="selCor('${c}')"></div>`
+            ).join('');
+            carregar();
         }
+
+        function setTarget(t) {
+            activeT = t;
+            [1,2,3].forEach(i => {
+                document.getElementById(`t${i}`).className = (i===t)
+                    ? "text-[9px] bg-white/10 px-3 py-2 rounded-full gold-text border border-[#bf953f]"
+                    : "text-[9px] bg-white/5 px-3 py-2 rounded-full text-slate-400";
+            });
+        }
+
+        function selCor(c) { cores[activeT-1] = c; document.getElementById(`manual${activeT}`).value = c; atuPre(); }
+        function atuManual(t, c) { cores[t-1] = c; atuPre(); }
+        function atuPre() { [1,2,3].forEach(i => document.getElementById(`pCol${i}`).style.backgroundColor = cores[i-1]); }
+
+        async function carregar() {
+            try {
+                const res = await fetch(URL_GS);
+                const data = await res.json();
+
+                document.getElementById('eqModalidade').innerHTML =
+                    '<option value="">Selecione a Modalidade</option>' +
+                    (data.esportes || []).slice(1).map(e => `<option value="${e[0]}">${e[0]}</option>`).join('');
+
+                const grupos = {};
+                (data.equipes || []).slice(1).forEach(eq => {
+                    const mod = eq[1];
+                    if (!grupos[mod]) grupos[mod] = [];
+                    grupos[mod].push(eq);
+                });
+
+                const container = document.getElementById('containerModalidades');
+                const mods = Object.keys(grupos);
+                if (mods.length === 0) {
+                    container.innerHTML = '<p class="text-slate-500 text-center">Nenhuma equipe cadastrada.</p>';
+                    return;
+                }
+
+                container.innerHTML = mods.map(mod => `
+                    <div class="mod-section">
+                        <h3 class="text-xl font-black uppercase italic gold-text mb-6">${mod}</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            ${grupos[mod].map(item => `
+                                <div class="glass p-4 rounded-2xl flex flex-col items-center text-center">
+                                    <div class="shield-master mb-2">
+                                        <div class="shield-inner">
+                                            <div class="shield-column" style="background:${item[2]}"></div>
+                                            <div class="shield-column" style="background:${item[3]}"></div>
+                                            <div class="shield-column" style="background:${item[4]}"></div>
+                                        </div>
+                                    </div>
+                                    <h4 class="font-bold text-[10px] uppercase truncate w-full">${item[0]}</h4>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function salvar() {
+            const n = document.getElementById('eqNome').value.trim();
+            const m = document.getElementById('eqModalidade').value;
+            if (!n || !m) return alert("Preencha o nome e a modalidade!");
+
+            document.getElementById('btn').innerText = "SALVANDO...";
+            document.getElementById('btn').disabled = true;
+
+            try {
+                await fetch(URL_GS, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ aba: 'equipes', valores: [n, m, cores[0], cores[1], cores[2]] })
+                });
+                alert("Equipe salva com sucesso!");
+                setTimeout(() => location.reload(), 1500);
+            } catch (e) {
+                alert("Erro ao salvar.");
+                document.getElementById('btn').innerText = "SALVAR EQUIPE";
+                document.getElementById('btn').disabled = false;
+            }
+        }
+
+        init();
     </script>
 </body>
 </html>

@@ -1,19 +1,648 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8"><title>Tabela - Master</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Confrontos - Torneio Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body{background:#050505;color:white;}.glass{background:rgba(255,255,255,0.03);border:1px solid rgba(191,149,63,0.2);}</style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family:'Poppins',sans-serif; background-color:#000000; color:#ffffff; min-height:100vh; }
+        .gold-text { color:#bf953f; }
+        .glass { background:rgba(255,255,255,0.03); backdrop-filter:blur(15px); border:1px solid rgba(191,149,63,0.2); }
+        .btn-gold { background:linear-gradient(135deg,#bf953f,#b38728); color:black; font-weight:800; transition:all 0.3s; }
+        .btn-gold:hover { transform:scale(1.01); box-shadow:0 0 15px rgba(191,149,63,0.4); }
+        .btn-sm { padding:4px 10px; border-radius:6px; font-size:10px; font-weight:700; text-transform:uppercase; transition:all 0.2s; cursor:pointer; border:none; }
+        .btn-up { background:rgba(34,197,94,0.2); color:#4ade80; }
+        .btn-up:hover { background:rgba(34,197,94,0.4); }
+        .btn-down { background:rgba(59,130,246,0.2); color:#60a5fa; }
+        .btn-down:hover { background:rgba(59,130,246,0.4); }
+        .btn-intervalo { background:rgba(168,85,247,0.2); color:#c084fc; }
+        .btn-intervalo:hover { background:rgba(168,85,247,0.4); }
+        .btn-add { background:rgba(251,191,36,0.2); color:#fbbf24; }
+        .btn-add:hover { background:rgba(251,191,36,0.4); }
+        input, select { background:rgba(0,0,0,0.6) !important; border:1px solid rgba(191,149,63,0.3) !important; color:white !important; outline:none; }
+        table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        th { background:rgba(191,149,63,0.1); color:#bf953f; text-transform:uppercase; padding:12px; }
+        td { padding:10px 8px; border-bottom:1px solid rgba(255,255,255,0.05); text-align:center; }
+        tr.intervalo td { background:rgba(168,85,247,0.08); color:#c084fc; font-style:italic; }
+        .fase-tag { font-size:9px; padding:2px 8px; border-radius:4px; text-transform:uppercase; font-weight:800; background:rgba(191,149,63,0.2); color:#bf953f; border:1px solid rgba(191,149,63,0.3); }
+        .grupo-tag { font-size:9px; padding:2px 8px; border-radius:4px; text-transform:uppercase; font-weight:800; background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.3); }
+        .intervalo-tag { font-size:9px; padding:2px 8px; border-radius:4px; text-transform:uppercase; font-weight:800; background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.3); }
+        
+        /* Estilos para Seleção de Times */
+        .check-card { background:rgba(255,255,255,0.05); border:1px solid rgba(191,149,63,0.1); transition:all 0.3s; cursor:pointer; }
+        .check-card.selected { border-color:#bf953f; background:rgba(191,149,63,0.15); }
+    </style>
+<base target="_blank">
 </head>
-<body class="p-6">
-    <div class="max-w-4xl mx-auto">
-        <a href="index.html" style="color:#bf953f">← Voltar</a>
-        <div class="glass p-8 rounded-3xl mt-6">
-            <h2 class="text-3xl font-black uppercase mb-6 italic">CLASSIFICAÇÃO <span style="color:#bf953f">ELITE</span></h2>
-            <div class="w-full border-t border-amber-500/20 pt-4">
-                <p class="text-slate-500">Os dados da classificação serão exibidos aqui via Sheets.</p>
+<body class="p-4 md:p-10">
+    <div class="max-w-6xl mx-auto">
+        <a href="index.html" onclick="event.preventDefault(); window.location.href='index.html'; return false;" class="gold-text uppercase text-xs tracking-widest font-bold hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i> Painel Principal
+        </a>
+
+        <div class="glass p-8 rounded-[2.5rem] mt-8 mb-10">
+            <h2 class="text-2xl font-black uppercase tracking-tighter mb-6 italic">
+                GERAR <span class="gold-text">CONFRONTOS</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Modalidade</label>
+                    <select id="selModalidade" class="w-full p-3 mt-1 rounded-xl" onchange="atualizarListaEquipes()"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Tipo de Confronto</label>
+                    <select id="selTipo" class="w-full p-3 mt-1 rounded-xl" onchange="mostrarOpcoesTipo()">
+                        <option value="">Selecione o formato...</option>
+                        <option value="liga_unico">Todos contra Todos - Turno Único</option>
+                        <option value="liga_ida_volta">Todos contra Todos - Ida e Volta</option>
+                        <option value="mata_mata">Eliminatória Simples (Mata-Mata)</option>
+                        <option value="mata_mata_dupla">Eliminatória Dupla</option>
+                        <option value="liga_champions">Liga Champions (alguns jogos + semi/final)</option>
+                        <option value="grupos_mata_mata">Grupos + Mata-Mata + Semi/Final</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="areaSelecaoEquipes" class="hidden mb-6">
+                <label class="text-[10px] uppercase text-slate-500 font-bold ml-2 mb-2 block">Selecione os Times Participantes</label>
+                <div id="containerEquipes" class="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-2 glass rounded-xl">
+                    </div>
+                <div class="mt-2 text-[10px] text-slate-400 italic">
+                    * Selecione no mínimo 2 equipes.
+                </div>
+            </div>
+
+            <div id="opcoesTipo" class="hidden mb-4">
+                <div id="optLigaChampions" class="hidden">
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Quantidade de Jogos por Time (fase de grupos)</label>
+                    <input type="number" id="qtdJogosChampions" value="3" min="1" max="20" class="w-full p-3 mt-1 rounded-xl">
+                </div>
+                <div id="optGrupos" class="hidden">
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Número de Grupos</label>
+                    <select id="numGrupos" class="w-full p-3 mt-1 rounded-xl">
+                        <option value="2">2 Grupos</option>
+                        <option value="4">4 Grupos</option>
+                        <option value="8">8 Grupos</option>
+                    </select>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2 mt-3 block">Classificados por Grupo</label>
+                    <select id="classificadosGrupo" class="w-full p-3 mt-1 rounded-xl">
+                        <option value="1">1º de cada grupo</option>
+                        <option value="2">2 primeiros de cada grupo</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Data do Evento</label>
+                    <input type="date" id="dataInicio" class="w-full p-3 mt-1 rounded-xl">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Horário de Início</label>
+                    <input type="time" id="horaInicio" value="17:00" class="w-full p-3 mt-1 rounded-xl">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Duração por Jogo (min)</label>
+                    <input type="number" id="duracaoPartida" value="8" class="w-full p-3 mt-1 rounded-xl">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Intervalo entre Jogos (min)</label>
+                    <input type="number" id="intervalo" value="2" class="w-full p-3 mt-1 rounded-xl">
+                </div>
+            </div>
+
+            <button onclick="previaTorneio()" class="w-full btn-gold py-3 rounded-xl uppercase text-xs tracking-widest">
+                <i class="fas fa-random mr-2"></i> GERAR JOGOS
+            </button>
+        </div>
+
+        <div id="areaPrevia" class="glass p-8 rounded-[2.5rem] hidden">
+            <h3 class="text-lg font-bold uppercase tracking-widest mb-4 flex items-center justify-between flex-wrap gap-4">
+                <span><i class="fas fa-list gold-text mr-3"></i> PRÉVIA DOS CONFRONTOS</span>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="abrirModalAddJogo()" class="btn-sm btn-add">
+                        <i class="fas fa-plus mr-1"></i> ADICIONAR JOGO
+                    </button>
+                    <button onclick="recalcularHorarios()" class="btn-sm" style="background:rgba(191,149,63,0.2);color:#bf953f;">
+                        <i class="fas fa-clock mr-1"></i> RECALCULAR HORÁRIOS
+                    </button>
+                    <button id="btnConfirmar" onclick="confirmarESalvar()" class="bg-green-600 hover:bg-green-700 text-white text-[10px] px-6 py-2 rounded-full font-bold uppercase transition-all">
+                        ✔ CONFIRMAR E SALVAR
+                    </button>
+                </div>
+            </h3>
+            <div class="overflow-x-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:40px;">#</th>
+                            <th>Fase</th>
+                            <th>Data</th>
+                            <th>Horário</th>
+                            <th>Equipe A</th>
+                            <th></th>
+                            <th>Equipe B</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoPrevia"></tbody>
+                </table>
             </div>
         </div>
     </div>
+
+    <div id="modalAddJogo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass p-8 rounded-[2rem] max-w-md w-full">
+            <h3 class="text-xl font-black uppercase tracking-tighter mb-6 italic gold-text">ADICIONAR JOGO</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Fase</label>
+                    <input type="text" id="addFase" value="Fase de Grupos" class="w-full p-3 mt-1 rounded-xl">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Data</label>
+                    <input type="date" id="addData" class="w-full p-3 mt-1 rounded-xl">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Horário</label>
+                    <input type="time" id="addHorario" class="w-full p-3 mt-1 rounded-xl">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe A</label>
+                    <select id="addEquipeA" class="w-full p-3 mt-1 rounded-xl"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe B</label>
+                    <select id="addEquipeB" class="w-full p-3 mt-1 rounded-xl"></select>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="fecharModalAddJogo()" class="flex-1 py-3 rounded-xl bg-slate-800 text-white text-xs font-bold uppercase">Cancelar</button>
+                <button onclick="confirmarAddJogo()" class="flex-1 py-3 rounded-xl btn-gold text-xs font-bold uppercase">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const URL_GS = "https://script.google.com/macros/s/AKfycbxiJPnyx4kC51xJCL26LoPkSumLkE8rHAn4f6DbF66Acy2dLiZbp_-JZjhYJSv6jXQa/exec";
+        let dadosGlobais = {};
+        let listaJogosGerados = [];
+        let equipesDaModalidade = [];
+
+        async function carregar() {
+            try {
+                const res = await fetch(URL_GS);
+                dadosGlobais = await res.json();
+                const select = document.getElementById('selModalidade');
+                select.innerHTML = '<option value="">Selecione a modalidade...</option>' +
+                    (dadosGlobais.esportes || []).slice(1).map(e => `<option value="${e[0]}">${e[0]}</option>`).join('');
+            } catch (e) { alert("Erro de conexão com o servidor."); }
+        }
+
+        function atualizarListaEquipes() {
+            const mod = document.getElementById('selModalidade').value;
+            const area = document.getElementById('areaSelecaoEquipes');
+            const container = document.getElementById('containerEquipes');
+            
+            if (!mod) {
+                area.classList.add('hidden');
+                return;
+            }
+
+            equipesDaModalidade = (dadosGlobais.equipes || []).slice(1)
+                .filter(e => e[1] === mod)
+                .map(e => e[0]);
+
+            container.innerHTML = equipesDaModalidade.map(nome => `
+                <div class="check-card p-2 rounded-lg flex items-center gap-2" onclick="toggleSelecao(this)">
+                    <input type="checkbox" name="equipesParticipantes" value="${nome}" class="hidden" checked>
+                    <i class="fas fa-check-circle text-green-500 opacity-100"></i>
+                    <span class="text-[10px] font-bold uppercase truncate">${nome}</span>
+                </div>
+            `).join('');
+
+            // Marcar todos como selecionados inicialmente
+            document.querySelectorAll('.check-card').forEach(card => card.classList.add('selected'));
+            area.classList.remove('hidden');
+        }
+
+        function toggleSelecao(el) {
+            const cb = el.querySelector('input');
+            const icon = el.querySelector('i');
+            cb.checked = !cb.checked;
+            
+            if(cb.checked) {
+                el.classList.add('selected');
+                icon.classList.replace('opacity-0', 'opacity-100');
+            } else {
+                el.classList.remove('selected');
+                icon.classList.replace('opacity-100', 'opacity-0');
+            }
+        }
+
+        function mostrarOpcoesTipo() {
+            const tipo = document.getElementById('selTipo').value;
+            document.getElementById('opcoesTipo').classList.add('hidden');
+            document.getElementById('optLigaChampions').classList.add('hidden');
+            document.getElementById('optGrupos').classList.add('hidden');
+
+            if (tipo === 'liga_champions') {
+                document.getElementById('opcoesTipo').classList.remove('hidden');
+                document.getElementById('optLigaChampions').classList.remove('hidden');
+            } else if (tipo === 'grupos_mata_mata') {
+                document.getElementById('opcoesTipo').classList.remove('hidden');
+                document.getElementById('optGrupos').classList.remove('hidden');
+            }
+        }
+
+        // ============================================================
+        // FUNÇÕES DE EDIÇÃO DA TABELA
+        // ============================================================
+
+        function moverCima(idx) {
+            if (idx <= 0) return;
+            [listaJogosGerados[idx], listaJogosGerados[idx - 1]] = [listaJogosGerados[idx - 1], listaJogosGerados[idx]];
+            renderizarPrevia();
+        }
+
+        function moverBaixo(idx) {
+            if (idx >= listaJogosGerados.length - 1) return;
+            [listaJogosGerados[idx], listaJogosGerados[idx + 1]] = [listaJogosGerados[idx + 1], listaJogosGerados[idx]];
+            renderizarPrevia();
+        }
+
+        function adicionarIntervalo(idx) {
+            const jogoAtual = listaJogosGerados[idx];
+            const intervaloMin = parseInt(document.getElementById('intervalo').value) || 2;
+            const duracaoMin = parseInt(document.getElementById('duracaoPartida').value) || 8;
+            const tempoTotal = duracaoMin + intervaloMin;
+
+            let [h, m] = jogoAtual.horario.split(':').map(Number);
+            m += duracaoMin;
+            while (m >= 60) { m -= 60; h++; }
+            const horarioFim = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+
+            m += tempoTotal;
+            while (m >= 60) { m -= 60; h++; }
+            const horarioAposIntervalo = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+
+            const itemIntervalo = {
+                mod: jogoAtual.mod,
+                data: jogoAtual.data,
+                horario: horarioFim,
+                tA: 'INTERVALO',
+                tB: 'DESCANSO',
+                fase: 'INTERVALO',
+                grupo: '',
+                tipo: 'intervalo',
+                duracao: tempoTotal,
+                horarioFim: horarioAposIntervalo
+            };
+
+            listaJogosGerados.splice(idx + 1, 0, itemIntervalo);
+            renderizarPrevia();
+        }
+
+        function abrirModalAddJogo() {
+            const mod = document.getElementById('selModalidade').value;
+            if (!mod) return alert("Selecione uma modalidade primeiro!");
+
+            const opts = equipesDaModalidade.map(e => `<option value="${e}">${e}</option>`).join('');
+            document.getElementById('addEquipeA').innerHTML = opts;
+            document.getElementById('addEquipeB').innerHTML = opts;
+
+            if (listaJogosGerados.length > 0) {
+                const ultimo = listaJogosGerados[listaJogosGerados.length - 1];
+                document.getElementById('addData').value = ultimo.data;
+                document.getElementById('addHorario').value = ultimo.horario;
+            } else {
+                document.getElementById('addData').value = document.getElementById('dataInicio').value;
+                document.getElementById('addHorario').value = document.getElementById('horaInicio').value;
+            }
+
+            document.getElementById('modalAddJogo').classList.remove('hidden');
+        }
+
+        function fecharModalAddJogo() {
+            document.getElementById('modalAddJogo').classList.add('hidden');
+        }
+
+        function confirmarAddJogo() {
+            const fase = document.getElementById('addFase').value;
+            const data = document.getElementById('addData').value;
+            const horario = document.getElementById('addHorario').value;
+            const tA = document.getElementById('addEquipeA').value;
+            const tB = document.getElementById('addEquipeB').value;
+
+            if (!data || !horario || !tA || !tB) return alert("Preencha todos os campos!");
+            if (tA === tB) return alert("As equipes devem ser diferentes!");
+
+            const mod = document.getElementById('selModalidade').value;
+            listaJogosGerados.push({ mod, data, horario, tA, tB, fase, grupo: '' });
+            fecharModalAddJogo();
+            renderizarPrevia();
+        }
+
+        function recalcularHorarios() {
+            const horaInic = document.getElementById('horaInicio').value;
+            const duracao = parseInt(document.getElementById('duracaoPartida').value);
+            const intervalo = parseInt(document.getElementById('intervalo').value);
+            let [h, m] = horaInic.split(':').map(Number);
+
+            listaJogosGerados.forEach(jogo => {
+                if (jogo.tipo === 'intervalo') {
+                    jogo.horario = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                    m += jogo.duracao || (duracao + intervalo);
+                    while (m >= 60) { m -= 60; h++; }
+                    jogo.horarioFim = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                } else {
+                    jogo.horario = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                    m += duracao + intervalo;
+                    while (m >= 60) { m -= 60; h++; }
+                }
+            });
+            renderizarPrevia();
+        }
+
+        // ============================================================
+        // GERAÇÃO DOS CONFRONTOS (COM FILTRO DE EQUIPES)
+        // ============================================================
+
+        function previaTorneio() {
+            const mod = document.getElementById('selModalidade').value;
+            const tipo = document.getElementById('selTipo').value;
+            const dataInic = document.getElementById('dataInicio').value;
+            const horaInic = document.getElementById('horaInicio').value;
+            const duracao = parseInt(document.getElementById('duracaoPartida').value);
+            const intervalo = parseInt(document.getElementById('intervalo').value);
+
+            // Capturar equipes selecionadas nos checkboxes
+            const equipesSelecionadas = Array.from(document.querySelectorAll('input[name="equipesParticipantes"]:checked'))
+                .map(cb => cb.value);
+
+            if (!mod || !tipo || !dataInic || !horaInic) return alert("Preencha todos os campos!");
+            if (equipesSelecionadas.length < 2) return alert("Selecione pelo menos 2 equipes participando!");
+
+            const equipesMod = [...equipesSelecionadas];
+            listaJogosGerados = [];
+            let [h, m] = horaInic.split(':').map(Number);
+
+            function proximoHorario() {
+                const horario = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                m += duracao + intervalo;
+                while (m >= 60) { m -= 60; h++; }
+                return horario;
+            }
+
+            function adicionarJogo(fase, tA, tB, grupo = '') {
+                listaJogosGerados.push({
+                    mod, data: dataInic, horario: proximoHorario(),
+                    tA, tB, fase, grupo
+                });
+            }
+
+            if (tipo === 'liga_unico') {
+                let confrontos = [];
+                for (let i = 0; i < equipesMod.length; i++) {
+                    for (let j = i + 1; j < equipesMod.length; j++) {
+                        confrontos.push([equipesMod[i], equipesMod[j]]);
+                    }
+                }
+                confrontos = embaralhar(confrontos);
+                confrontos = ordenarEvitarRepeticao(confrontos);
+                confrontos.forEach(par => adicionarJogo('Fase de Grupos', par[0], par[1]));
+            }
+            else if (tipo === 'liga_ida_volta') {
+                let confrontos = [];
+                for (let i = 0; i < equipesMod.length; i++) {
+                    for (let j = i + 1; j < equipesMod.length; j++) {
+                        confrontos.push([equipesMod[i], equipesMod[j]]);
+                    }
+                }
+                let ida = embaralhar([...confrontos]);
+                ida = ordenarEvitarRepeticao(ida);
+                ida.forEach(par => adicionarJogo('1º Turno', par[0], par[1]));
+                let volta = embaralhar(confrontos.map(c => [c[1], c[0]]));
+                volta = ordenarEvitarRepeticao(volta);
+                volta.forEach(par => adicionarJogo('2º Turno', par[0], par[1]));
+            }
+            else if (tipo === 'mata_mata') {
+                const total = equipesMod.length;
+                let fases = [];
+                if (total <= 2) fases = ['Final'];
+                else if (total <= 4) fases = ['Semi', 'Final'];
+                else if (total <= 8) fases = ['Quartas', 'Semi', 'Final'];
+                else fases = ['Oitavas', 'Quartas', 'Semi', 'Final'];
+                let equipesRestantes = embaralhar([...equipesMod]);
+                fases.forEach(fase => {
+                    const proxima = [];
+                    for (let i = 0; i < equipesRestantes.length; i += 2) {
+                        if (i + 1 < equipesRestantes.length) {
+                            adicionarJogo(fase, equipesRestantes[i], equipesRestantes[i + 1]);
+                            proxima.push(equipesRestantes[i]);
+                        }
+                    }
+                    equipesRestantes = proxima;
+                });
+            }
+            else if (tipo === 'mata_mata_dupla') {
+                let embaralhado = embaralhar([...equipesMod]);
+                let chaveSuperior = [];
+                let chaveInferior = [];
+                for (let i = 0; i < embaralhado.length; i += 2) {
+                    if (i + 1 < embaralhado.length) {
+                        adicionarJogo('Chave Superior - R1', embaralhado[i], embaralhado[i + 1]);
+                        chaveSuperior.push(embaralhado[i]);
+                        chaveInferior.push(embaralhado[i + 1]);
+                    }
+                }
+                for (let i = 0; i < chaveInferior.length; i += 2) {
+                    if (i + 1 < chaveInferior.length) {
+                        adicionarJogo('Chave Inferior', chaveInferior[i], chaveInferior[i + 1]);
+                    }
+                }
+                if (chaveSuperior.length > 0) {
+                    adicionarJogo('Final', chaveSuperior[0], chaveSuperior[0]);
+                }
+            }
+            else if (tipo === 'liga_champions') {
+                const qtdJogos = parseInt(document.getElementById('qtdJogosChampions').value) || 3;
+                equipesMod.forEach(time => {
+                    const adversarios = embaralhar(equipesMod.filter(t => t !== time)).slice(0, qtdJogos);
+                    adversarios.forEach(adv => {
+                        const jaExiste = listaJogosGerados.some(j =>
+                            (j.tA === time && j.tB === adv) || (j.tA === adv && j.tB === time)
+                        );
+                        if (!jaExiste) {
+                            adicionarJogo('Fase de Grupos', time, adv);
+                        }
+                    });
+                });
+                const semi = embaralhar([...equipesMod]).slice(0, 4);
+                if(semi.length >= 2) adicionarJogo('Semi-Final', semi[0], semi[1]);
+                if(semi.length >= 4) adicionarJogo('Semi-Final', semi[2], semi[3]);
+                if(semi.length >= 3) adicionarJogo('Final', semi[0], semi[2]);
+            }
+            else if (tipo === 'grupos_mata_mata') {
+                const numGrupos = parseInt(document.getElementById('numGrupos').value);
+                const classificados = parseInt(document.getElementById('classificadosGrupo').value);
+                const embaralhado = embaralhar([...equipesMod]);
+                const tamanhoGrupo = Math.floor(embaralhado.length / numGrupos);
+                const grupos = [];
+                for (let g = 0; g < numGrupos; g++) {
+                    const inicio = g * tamanhoGrupo;
+                    const fim = (g === numGrupos - 1) ? embaralhado.length : inicio + tamanhoGrupo;
+                    grupos.push(embaralhado.slice(inicio, fim));
+                }
+                grupos.forEach((grupo, idx) => {
+                    const letra = String.fromCharCode(65 + idx);
+                    for (let i = 0; i < grupo.length; i++) {
+                        for (let j = i + 1; j < grupo.length; j++) {
+                            adicionarJogo('Fase de Grupos', grupo[i], grupo[j], 'Grupo ' + letra);
+                        }
+                    }
+                });
+                let classificadosGeral = [];
+                grupos.forEach(grupo => {
+                    classificadosGeral = classificadosGeral.concat(grupo.slice(0, classificados));
+                });
+                const totalClassif = classificadosGeral.length;
+                let fases = [];
+                if (totalClassif <= 2) fases = ['Final'];
+                else if (totalClassif <= 4) fases = ['Semi', 'Final'];
+                else if (totalClassif <= 8) fases = ['Quartas', 'Semi', 'Final'];
+                else fases = ['Oitavas', 'Quartas', 'Semi', 'Final'];
+                let restantes = embaralhar([...classificadosGeral]);
+                fases.forEach(fase => {
+                    const proxima = [];
+                    for (let i = 0; i < restantes.length; i += 2) {
+                        if (i + 1 < restantes.length) {
+                            adicionarJogo(fase, restantes[i], restantes[i + 1]);
+                            proxima.push(restantes[i]);
+                        }
+                    }
+                    restantes = proxima;
+                });
+            }
+
+            renderizarPrevia();
+        }
+
+        function embaralhar(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function ordenarEvitarRepeticao(confrontos) {
+            if (confrontos.length === 0) return [];
+            let ordenados = [confrontos.shift()];
+            while (confrontos.length > 0) {
+                const ultimo = ordenados[ordenados.length - 1];
+                const idx = confrontos.findIndex(c => !c.includes(ultimo[0]) && !c.includes(ultimo[1]));
+                ordenados.push(idx !== -1 ? confrontos.splice(idx, 1)[0] : confrontos.shift());
+            }
+            return ordenados;
+        }
+
+        function renderizarPrevia() {
+            document.getElementById('areaPrevia').classList.remove('hidden');
+            document.getElementById('corpoPrevia').innerHTML = listaJogosGerados.map((j, i) => {
+                if (j.tipo === 'intervalo') {
+                    return `
+                        <tr class="intervalo">
+                            <td>${i + 1}</td>
+                            <td><span class="intervalo-tag">INTERVALO</span></td>
+                            <td>${j.data}</td>
+                            <td>${j.horario} - ${j.horarioFim || ''}</td>
+                            <td colspan="3" class="text-center">⏱ DESCANSO (${j.duracao || '?'} min)</td>
+                            <td>
+                                <button onclick="remover(${i})" class="text-red-500 hover:text-red-400 text-xs">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>
+                            ${j.grupo ? `<span class="grupo-tag">${j.grupo}</span> ` : ''}
+                            <span class="fase-tag">${j.fase}</span>
+                        </td>
+                        <td>
+                            <input type="date" value="${j.data}" onchange="listaJogosGerados[${i}].data = this.value"
+                                class="p-1 rounded bg-black/40 text-center text-xs" style="width:120px;">
+                        </td>
+                        <td>
+                            <input type="time" value="${j.horario}" onchange="listaJogosGerados[${i}].horario = this.value"
+                                class="p-1 rounded bg-black/40 text-center text-xs" style="width:80px;">
+                        </td>
+                        <td class="font-bold uppercase text-[11px]">${j.tA}</td>
+                        <td class="gold-text font-black text-xs">VS</td>
+                        <td class="font-bold uppercase text-[11px]">${j.tB}</td>
+                        <td>
+                            <div class="flex gap-1 justify-center flex-wrap">
+                                <button onclick="moverCima(${i})" class="btn-sm btn-up" title="Mover para cima">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button onclick="moverBaixo(${i})" class="btn-sm btn-down" title="Mover para baixo">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                                <button onclick="adicionarIntervalo(${i})" class="btn-sm btn-intervalo" title="Adicionar intervalo após">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                                <button onclick="remover(${i})" class="btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;" title="Remover">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function remover(idx) {
+            listaJogosGerados.splice(idx, 1);
+            renderizarPrevia();
+        }
+
+        async function confirmarESalvar() {
+            const btn = document.getElementById('btnConfirmar');
+            btn.innerText = "SALVANDO...";
+            btn.disabled = true;
+
+            try {
+                for (const jogo of listaJogosGerados) {
+                    if (jogo.tipo === 'intervalo') continue;
+                    await fetch(URL_GS, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({
+                            aba: 'tabela',
+                            valores: [jogo.mod, jogo.data, jogo.horario, jogo.tA, jogo.tB, 0, 0]
+                        })
+                    });
+                }
+                alert(`${listaJogosGerados.filter(j => j.tipo !== 'intervalo').length} jogos salvos com sucesso na aba 'tabela'!`);
+                window.location.href = "cronograma.html";
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao salvar. Verifique sua conexão.");
+                btn.disabled = false;
+                btn.innerText = "✔ CONFIRMAR E SALVAR";
+            }
+        }
+
+        carregar();
+    </script>
 </body>
 </html>

@@ -1,29 +1,101 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8"><title>Esportes - Master</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esportes - Torneio Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body{background:#050505;color:white;font-family:sans-serif;}.glass{background:rgba(255,255,255,0.03);border:1px solid rgba(191,149,63,0.2);}</style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #000000; color: #ffffff; min-height: 100vh; }
+        .gold-text { color: #bf953f; }
+        .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(191,149,63,0.2); }
+        .btn-gold { background: linear-gradient(135deg, #bf953f, #b38728); color: black; font-weight: 800; transition: all 0.3s; }
+        .btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(191,149,63,0.4); }
+        input { background: rgba(0,0,0,0.6) !important; border: 1px solid rgba(191,149,63,0.3) !important; color: white !important; }
+    </style>
 </head>
-<body class="p-6 flex flex-col items-center">
-    <div class="max-w-md w-full">
-        <a href="index.html" style="color:#bf953f">← Voltar</a>
-        <div class="glass p-8 rounded-3xl mt-6">
-            <h2 class="text-2xl font-bold mb-6 uppercase tracking-wider">Novo <span style="color:#bf953f">Esporte</span></h2>
-            <input type="text" id="espNome" placeholder="Ex: Futsal" class="w-full bg-black border border-amber-500/30 p-4 rounded-xl mb-4 outline-none">
-            <button onclick="salvar()" id="btn" class="w-full bg-[#bf953f] text-black font-bold p-4 rounded-xl uppercase">Cadastrar</button>
+<body class="p-4 md:p-10">
+    <div class="max-w-2xl mx-auto">
+        <a href="index.html" class="gold-text uppercase text-xs tracking-widest font-bold hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i> Painel Principal
+        </a>
+
+        <div class="glass p-8 rounded-[2.5rem] mt-8 mb-10">
+            <h2 class="text-2xl font-black uppercase tracking-tighter mb-6 italic">
+                CADASTRAR <span class="gold-text">MODALIDADE</span>
+            </h2>
+            <div class="flex flex-col md:flex-row gap-4">
+                <input type="text" id="espNome" placeholder="Ex: Futsal Masculino" class="flex-1 p-4 rounded-2xl outline-none">
+                <button onclick="salvar()" id="btn" class="btn-gold px-8 py-4 rounded-2xl uppercase text-xs tracking-widest">
+                    CADASTRAR
+                </button>
+            </div>
+        </div>
+
+        <div class="glass p-8 rounded-[2.5rem]">
+            <h3 class="text-lg font-bold uppercase tracking-widest mb-6 flex items-center">
+                <i class="fas fa-list-ul gold-text mr-3"></i> Modalidades Ativas
+            </h3>
+            <div id="listaEsportes" class="space-y-3">
+                <p class="text-slate-500 animate-pulse">Consultando banco de dados...</p>
+            </div>
         </div>
     </div>
+
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbwS6YpnBBgOmrvagK7KcQ9qZGQZCsemOyVAEFxreOdNiN1C64E0oE6eFlDGibrC7FXl/exec";
-        async function salvar() {
-            const v = document.getElementById('espNome').value;
-            if(!v) return;
-            document.getElementById('btn').innerText = "Salvando...";
-            await fetch(URL, {method:'POST', mode:'no-cors', body:JSON.stringify({aba:'esportes', valores:[v]})});
-            alert("Sucesso!");
-            location.reload();
+        const URL_GS = "https://script.google.com/macros/s/AKfycbxiJPnyx4kC51xJCL26LoPkSumLkE8rHAn4f6DbF66Acy2dLiZbp_-JZjhYJSv6jXQa/exec";
+
+        async function carregar() {
+            try {
+                const response = await fetch(URL_GS);
+                const data = await response.json();
+                const lista = document.getElementById('listaEsportes');
+                const itens = data.esportes || [];
+
+                if (itens.length <= 1) {
+                    lista.innerHTML = '<p class="text-slate-600 italic">Nenhuma modalidade cadastrada.</p>';
+                    return;
+                }
+
+                lista.innerHTML = itens.slice(1).map(item => `
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-500/30 transition">
+                        <span class="font-medium tracking-wide uppercase text-sm">${item[0]}</span>
+                        <i class="fas fa-check-circle gold-text"></i>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('listaEsportes').innerHTML = '<p class="text-red-400">Erro ao carregar dados.</p>';
+            }
         }
+
+        async function salvar() {
+            const input = document.getElementById('espNome');
+            const btn = document.getElementById('btn');
+            const valor = input.value.trim();
+            if (!valor) return alert("Digite o nome da modalidade!");
+
+            btn.innerText = "SALVANDO...";
+            btn.disabled = true;
+
+            try {
+                await fetch(URL_GS, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ aba: 'esportes', valores: [valor] })
+                });
+                input.value = '';
+                alert("Modalidade salva com sucesso!");
+                setTimeout(() => location.reload(), 1500);
+            } catch (e) {
+                alert("Erro ao conectar.");
+                btn.innerText = "CADASTRAR";
+                btn.disabled = false;
+            }
+        }
+
+        carregar();
     </script>
 </body>
 </html>

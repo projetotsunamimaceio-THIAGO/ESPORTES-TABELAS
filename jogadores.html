@@ -1,31 +1,110 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8"><title>Jogadores - Master</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogadores - Torneio Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body{background:#050505;color:white;font-family:sans-serif;}.glass{background:rgba(255,255,255,0.03);border:1px solid rgba(191,149,63,0.2);}</style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { background:#050505; color:white; font-family:'Poppins',sans-serif; min-height:100vh; }
+        .gold-text { color:#bf953f; }
+        .glass { background:rgba(255,255,255,0.03); border:1px solid rgba(191,149,63,0.2); backdrop-filter:blur(10px); }
+        input, select, textarea { background:rgba(0,0,0,0.7) !important; border:1px solid rgba(191,149,63,0.3) !important; color:white !important; outline:none; }
+        input:focus, select:focus, textarea:focus { border-color:#bf953f !important; }
+    </style>
 </head>
 <body class="p-6 flex flex-col items-center">
-    <div class="max-w-md w-full">
-        <a href="index.html" style="color:#bf953f">← Voltar</a>
-        <div class="glass p-8 rounded-3xl mt-6">
-            <h2 class="text-2xl font-bold mb-6 uppercase tracking-wider">Inscritos <span style="color:#bf953f">Atleta</span></h2>
-            <input type="text" id="jNome" placeholder="Nome do Atleta" class="w-full bg-black border border-amber-500/30 p-4 rounded-xl mb-4 outline-none text-white">
-            <input type="text" id="jEquipe" placeholder="Nome da Equipe" class="w-full bg-black border border-amber-500/30 p-4 rounded-xl mb-6 outline-none text-white">
-            <button onclick="salvar()" id="btn" class="w-full bg-[#bf953f] text-black font-bold p-4 rounded-xl uppercase">Finalizar</button>
+    <div class="max-w-xl w-full">
+        <a href="index.html" class="gold-text uppercase text-xs font-bold tracking-widest hover:underline">← Voltar ao Painel</a>
+
+        <div class="glass p-8 rounded-[2.5rem] mt-6">
+            <h2 class="text-2xl font-black uppercase tracking-tighter mb-2 italic">
+                INSCRIÇÃO <span class="gold-text">EM LOTE</span>
+            </h2>
+            <p class="text-slate-500 text-xs mb-6 uppercase tracking-widest font-bold">Máximo: 8 Jogadores por Equipe</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Selecione a Equipe</label>
+                    <select id="jEquipe" class="w-full p-4 rounded-2xl mt-1 text-sm">
+                        <option value="">Carregando equipes...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Nomes dos Atletas (Um por linha)</label>
+                    <textarea id="jNomesLote" rows="8" placeholder="Ex:&#10;João Silva&#10;Pedro Santos&#10;Lucas Oliveira"
+                        class="w-full p-4 rounded-2xl mt-1 text-sm resize-none"></textarea>
+                </div>
+                <div id="statusInfo" class="text-[10px] uppercase font-bold text-center h-4 gold-text"></div>
+                <button onclick="salvarLote()" id="btn" class="w-full bg-[#bf953f] text-black font-black p-5 rounded-2xl uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
+                    FINALIZAR INSCRIÇÕES
+                </button>
+            </div>
         </div>
     </div>
+
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbwS6YpnBBgOmrvagK7KcQ9qZGQZCsemOyVAEFxreOdNiN1C64E0oE6eFlDGibrC7FXl/exec";
-        async function salvar() {
-            const n = document.getElementById('jNome').value;
-            const e = document.getElementById('jEquipe').value;
-            if(!n || !e) return;
-            document.getElementById('btn').innerText = "Enviando...";
-            await fetch(URL, {method:'POST', mode:'no-cors', body:JSON.stringify({aba:'jogadores', valores:[n, e]})});
-            alert("Inscrição realizada!");
-            location.reload();
+        const URL_GS = "https://script.google.com/macros/s/AKfycbxiJPnyx4kC51xJCL26LoPkSumLkE8rHAn4f6DbF66Acy2dLiZbp_-JZjhYJSv6jXQa/exec";
+        let dadosGlobais = {};
+
+        async function carregarDados() {
+            try {
+                const response = await fetch(URL_GS);
+                dadosGlobais = await response.json();
+                const select = document.getElementById('jEquipe');
+                const equipes = dadosGlobais.equipes || [];
+
+                if (equipes.length > 1) {
+                    select.innerHTML = '<option value="">Selecione a Equipe</option>' +
+                        equipes.slice(1).map(eq => `<option value="${eq[0]}">${eq[0]}</option>`).join('');
+                } else {
+                    select.innerHTML = '<option value="">Nenhuma equipe cadastrada</option>';
+                }
+            } catch (e) { console.error("Erro ao carregar dados", e); }
         }
+
+        async function salvarLote() {
+            const equipeSel = document.getElementById('jEquipe').value;
+            const nomesTexto = document.getElementById('jNomesLote').value.trim();
+            const btn = document.getElementById('btn');
+            const status = document.getElementById('statusInfo');
+
+            if (!equipeSel || !nomesTexto) return alert("Selecione a equipe e digite os nomes!");
+
+            const listaNomes = nomesTexto.split('\n').map(n => n.trim()).filter(n => n !== "");
+
+            // Verificar limite de 8 jogadores
+            const jogadoresExistentes = (dadosGlobais.jogadores || []).slice(1)
+                .filter(j => j[1] === equipeSel).length;
+
+            if (jogadoresExistentes + listaNomes.length > 8) {
+                const vaga = 8 - jogadoresExistentes;
+                return alert(`Limite excedido! "${equipeSel}" já tem ${jogadoresExistentes} jogadores. Vagas disponíveis: ${vaga}.`);
+            }
+
+            btn.innerText = "PROCESSANDO...";
+            btn.disabled = true;
+
+            try {
+                for (let nomeAtleta of listaNomes) {
+                    status.innerText = `Enviando: ${nomeAtleta}...`;
+                    await fetch(URL_GS, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({ aba: 'jogadores', valores: [nomeAtleta, equipeSel] })
+                    });
+                }
+                alert("Todos os atletas foram inscritos com sucesso!");
+                setTimeout(() => location.reload(), 1500);
+            } catch (e) {
+                alert("Erro ao salvar.");
+                btn.innerText = "FINALIZAR INSCRIÇÕES";
+                btn.disabled = false;
+            }
+        }
+
+        carregarDados();
     </script>
 </body>
 </html>

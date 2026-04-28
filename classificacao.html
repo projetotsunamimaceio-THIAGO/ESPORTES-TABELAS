@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classificação - Torneio Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family:'Poppins',sans-serif; background-color:#000000; color:#ffffff; min-height:100vh; }
+        .gold-text { color:#bf953f; }
+        .glass { background:rgba(255,255,255,0.03); backdrop-filter:blur(15px); border:1px solid rgba(191,149,63,0.2); }
+        table { width:100%; border-collapse:collapse; }
+        th { background:rgba(191,149,63,0.1); color:#bf953f; text-transform:uppercase; padding:15px; font-size:10px; letter-spacing:1px; }
+        td { padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); text-align:center; font-size:13px; }
+        .shield-mini { width:12px; height:12px; border-radius:50%; display:inline-block; margin-right:8px; vertical-align:middle; }
+        .mod-title { border-left:3px solid #bf953f; padding-left:15px; margin:30px 0 15px 0; font-style:italic; }
+        .pos-1 { color:#ffd700; font-weight:800; }
+        .pos-2 { color:#c0c0c0; font-weight:800; }
+        .pos-3 { color:#cd7f32; font-weight:800; }
+    </style>
+<base target="_blank">
+</head>
+<body class="p-4 md:p-10">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div>
+                <a href="index.html" onclick="event.preventDefault(); window.location.href='index.html'; return false;" class="gold-text uppercase text-xs font-bold hover:underline">
+                    <i class="fas fa-arrow-left mr-2"></i> Painel Principal
+                </a>
+                <h1 class="text-3xl font-black uppercase mt-2 italic">QUADRO DE <span class="gold-text">CLASSIFICAÇÃO</span></h1>
+            </div>
+            <select id="selMod" onchange="atualizarInterface()" class="bg-black border border-[#bf953f]/30 p-3 rounded-xl text-xs uppercase font-bold outline-none w-full md:w-64">
+                <option value="TODAS">Ver Todas as Modalidades</option>
+            </select>
+        </div>
+
+        <div class="glass p-4 rounded-xl mb-8 text-[10px] text-slate-400">
+            <span class="gold-text font-bold uppercase">Critérios de Desempate:</span>
+            1º Pontos → 2º Vitórias → 3º Saldo de Gols → 4º Gols Pró → 5º Confronto Direto
+        </div>
+
+        <div id="containerTabelas" class="space-y-12"></div>
+    </div>
+
+    <script>
+        const URL_GS = "https://script.google.com/macros/s/AKfycbxiJPnyx4kC51xJCL26LoPkSumLkE8rHAn4f6DbF66Acy2dLiZbp_-JZjhYJSv6jXQa/exec";
+        let db = {};
+
+        async function carregarDados() {
+            try {
+                const res = await fetch(URL_GS);
+                db = await res.json();
+
+                const select = document.getElementById('selMod');
+                (db.esportes || []).slice(1).forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e[0];
+                    opt.textContent = e[0];
+                    select.appendChild(opt);
+                });
+
+                atualizarInterface();
+            } catch (e) { console.error("Erro:", e); }
+        }
+
+        // ============================================================
+        // FUNÇÃO AUXILIAR: GARANTE QUE O VALOR SEJA NÚMERO
+        // ============================================================
+        function toNum(valor) {
+            const n = Number(String(valor).trim());
+            return isNaN(n) ? 0 : n;
+        }
+
+        function calcularEstatistica(modalidade) {
+            const equipes = (db.equipes || []).slice(1).filter(e => e[1] === modalidade);
+            const jogos = (db.tabela || []).slice(1).filter(j => j[0] === modalidade);
+
+            let stats = {};
+            equipes.forEach(e => {
+                stats[e[0]] = {
+                    nome: e[0],
+                    pj: 0, v: 0, e: 0, d: 0,
+                    gp: 0, gc: 0, sg: 0, pts: 0,
+                    cor: e[2] || '#333'
+                };
+            });
+
+            let confrontosDiretos = {};
+
+            jogos.forEach(j => {
+                const tA = String(j[3] || '').trim();
+                const tB = String(j[4] || '').trim();
+
+                // ============================================================
+                // CORREÇÃO: Converte EXPLICITAMENTE para número
+                // ============================================================
+                const gA = toNum(j[5]);
+                const gB = toNum(j[6]);
+
+                // Verifica se os times existem
+                if (!stats[tA] || !stats[tB]) return;
+
+                // Verifica se o placar foi realmente preenchido (não é vazio)
+                const strA = (j[5] === undefined || j[5] === null || String(j[5]).trim() === '') ? '' : String(j[5]).trim();
+                const strB = (j[6] === undefined || j[6] === null || String(j[6]).trim() === '') ? '' : String(j[6]).trim();
+                if (strA === '' || strB === '') return;
+
+                // Armazena confronto direto
+                const chaveAB = tA + '___' + tB;
+                const chaveBA = tB + '___' + tA;
+                confrontosDiretos[chaveAB] = { gp: gA, gc: gB };
+                confrontosDiretos[chaveBA] = { gp: gB, gc: gA };
+
+                // ============================================================
+                // ESTATÍSTICAS - TUDO COMO NÚMERO
+                // ============================================================
+                stats[tA].pj = stats[tA].pj + 1;
+                stats[tB].pj = stats[tB].pj + 1;
+
+                stats[tA].gp = stats[tA].gp + gA;
+                stats[tA].gc = stats[tA].gc + gB;
+                stats[tB].gp = stats[tB].gp + gB;
+                stats[tB].gc = stats[tB].gc + gA;
+
+                stats[tA].sg = stats[tA].gp - stats[tA].gc;
+                stats[tB].sg = stats[tB].gp - stats[tB].gc;
+
+                // ============================================================
+                // PONTUAÇÃO
+                // ============================================================
+                if (gA > gB) {
+                    // Time A venceu
+                    stats[tA].pts = stats[tA].pts + 3;
+                    stats[tA].v = stats[tA].v + 1;
+                    stats[tB].d = stats[tB].d + 1;
+                } else if (gB > gA) {
+                    // Time B venceu
+                    stats[tB].pts = stats[tB].pts + 3;
+                    stats[tB].v = stats[tB].v + 1;
+                    stats[tA].d = stats[tA].d + 1;
+                } else {
+                    // Empate
+                    stats[tA].pts = stats[tA].pts + 1;
+                    stats[tB].pts = stats[tB].pts + 1;
+                    stats[tA].e = stats[tA].e + 1;
+                    stats[tB].e = stats[tB].e + 1;
+                }
+            });
+
+            // ============================================================
+            // ORDENAÇÃO COM CRITÉRIOS DE DESEMPATE
+            // ============================================================
+            const times = Object.values(stats);
+
+            times.sort((a, b) => {
+                // 1º CRITÉRIO: Maior número de pontos
+                if (b.pts !== a.pts) return b.pts - a.pts;
+
+                // 2º CRITÉRIO: Maior número de vitórias
+                if (b.v !== a.v) return b.v - a.v;
+
+                // 3º CRITÉRIO: Melhor saldo de gols
+                if (b.sg !== a.sg) return b.sg - a.sg;
+
+                // 4º CRITÉRIO: Maior número de gols pró
+                if (b.gp !== a.gp) return b.gp - a.gp;
+
+                // 5º CRITÉRIO: Confronto direto
+                const confA = confrontosDiretos[a.nome + '___' + b.nome];
+                const confB = confrontosDiretos[b.nome + '___' + a.nome];
+
+                if (confA && confB) {
+                    let ptsA = 0, ptsB = 0;
+                    if (confA.gp > confA.gc) ptsA = 3;
+                    else if (confA.gp === confA.gc) ptsA = 1;
+
+                    if (confB.gp > confB.gc) ptsB = 3;
+                    else if (confB.gp === confB.gc) ptsB = 1;
+
+                    if (ptsA !== ptsB) return ptsB - ptsA;
+
+                    const sgA = confA.gp - confA.gc;
+                    const sgB = confB.gp - confB.gc;
+                    if (sgA !== sgB) return sgB - sgA;
+
+                    if (confA.gp !== confB.gp) return confB.gp - confA.gp;
+                }
+
+                return 0;
+            });
+
+            return times;
+        }
+
+        function atualizarInterface() {
+            const filtro = document.getElementById('selMod').value;
+            const container = document.getElementById('containerTabelas');
+            container.innerHTML = '';
+
+            const mods = filtro === "TODAS"
+                ? (db.esportes || []).slice(1).map(e => e[0])
+                : [filtro];
+
+            mods.forEach(mod => {
+                const rank = calcularEstatistica(mod);
+                if (rank.length === 0) return;
+
+                const section = document.createElement('div');
+                section.innerHTML = `
+                    <h2 class="mod-title text-sm font-black uppercase gold-text tracking-widest">${mod}</h2>
+                    <div class="glass rounded-2xl overflow-hidden">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="w-12">#</th>
+                                    <th class="text-left">Equipe</th>
+                                    <th>PJ</th>
+                                    <th>V</th>
+                                    <th>E</th>
+                                    <th>D</th>
+                                    <th>GP</th>
+                                    <th>GC</th>
+                                    <th>SG</th>
+                                    <th class="gold-text">PTS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rank.map((s, i) => `
+                                    <tr>
+                                        <td class="font-bold ${i < 3 ? 'pos-' + (i+1) : 'text-slate-500'}">${i+1}º</td>
+                                        <td class="text-left font-bold uppercase text-[11px]">
+                                            <div class="shield-mini" style="background:${s.cor}"></div>${s.nome}
+                                        </td>
+                                        <td>${s.pj}</td>
+                                        <td>${s.v}</td>
+                                        <td>${s.e}</td>
+                                        <td>${s.d}</td>
+                                        <td>${s.gp}</td>
+                                        <td>${s.gc}</td>
+                                        <td class="${s.sg > 0 ? 'text-green-400' : s.sg < 0 ? 'text-red-400' : ''}">${s.sg > 0 ? '+' + s.sg : s.sg}</td>
+                                        <td class="font-black text-white text-lg">${s.pts}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+
+            if (container.innerHTML === '') {
+                container.innerHTML = '<p class="text-slate-500 text-center py-10">Nenhum dado para exibir.</p>';
+            }
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>
