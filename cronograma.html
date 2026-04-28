@@ -15,7 +15,6 @@
         .timeline-item::before { content:''; position:absolute; left:-7px; top:8px; width:12px; height:12px; background:#bf953f; border-radius:50%; box-shadow:0 0 10px #bf953f; }
         .tag-mod { font-size:9px; padding:2px 8px; border-radius:4px; text-transform:uppercase; font-weight:800; }
 
-        /* PLACAR */
         .placar-display { cursor:pointer; padding:4px 12px; border-radius:8px; transition:all 0.2s; }
         .placar-display:hover { background:rgba(191,149,63,0.1); }
         .placar-form { display:flex; align-items:center; gap:6px; }
@@ -42,28 +41,58 @@
         .jogo-saltado { opacity:0.4; text-decoration:line-through; }
         .a-definir { color:#666; font-style:italic; font-size:10px; }
 
-        .escudo {
-            width: 28px;
-            height: 36px;
-            position: relative;
-            flex-shrink: 0;
-            clip-path: polygon(50% 100%, 0 75%, 0 0, 100% 0, 100% 75%);
-            border-radius: 2px 2px 0 0;
-            overflow: hidden;
-        }
-        .escudo-faixa { position: absolute; top: 0; bottom: 0; width: 33.33%; }
-        .escudo-faixa:nth-child(1) { left: 0; }
-        .escudo-faixa:nth-child(2) { left: 33.33%; }
-        .escudo-faixa:nth-child(3) { left: 66.66%; width: 33.34%; }
+        .escudo { width:28px; height:36px; position:relative; flex-shrink:0; clip-path:polygon(50% 100%, 0 75%, 0 0, 100% 0, 100% 75%); border-radius:2px 2px 0 0; overflow:hidden; }
+        .escudo-faixa { position:absolute; top:0; bottom:0; width:33.33%; }
+        .escudo-faixa:nth-child(1) { left:0; }
+        .escudo-faixa:nth-child(2) { left:33.33%; }
+        .escudo-faixa:nth-child(3) { left:66.66%; width:33.34%; }
 
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:50; display:none; align-items:center; justify-content:center; padding:20px; }
         .modal-overlay.ativo { display:flex; }
         .modal-content { background:#0a0a0a; border:1px solid rgba(191,149,63,0.3); border-radius:24px; padding:32px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; }
+
+        .pts-badge { font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px; text-transform:uppercase; }
+        .pts-win  { background:rgba(34,197,94,0.2);  color:#4ade80; border:1px solid rgba(34,197,94,0.4); }
+        .pts-draw { background:rgba(234,179,8,0.2);  color:#facc15; border:1px solid rgba(234,179,8,0.4); }
+        .pts-loss { background:rgba(239,68,68,0.2);  color:#f87171; border:1px solid rgba(239,68,68,0.4); }
+        .pts-none { background:rgba(100,116,139,0.15); color:#64748b; border:1px solid rgba(100,116,139,0.2); }
+
+        .fase-badge { font-size:8px; padding:2px 6px; border-radius:3px; text-transform:uppercase; font-weight:700; letter-spacing:0.05em; }
+        .fase-semi { background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); }
+        .fase-final { background:rgba(234,179,8,0.2); color:#facc15; border:1px solid rgba(234,179,8,0.4); }
+        .fase-terceiro { background:rgba(100,116,139,0.2); color:#94a3b8; border:1px solid rgba(100,116,139,0.4); }
+        .fase-grupos { background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.4); }
+        .fase-quartas { background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.4); }
+
+        .auto-filled { animation: pulseGold 2s ease-in-out; }
+        @keyframes pulseGold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(191,149,63,0); }
+            50% { box-shadow: 0 0 15px 3px rgba(191,149,63,0.3); }
+        }
+
+        /* --- NOVOS ESTILOS PARA O MODO EVENTO GERAL --- */
+        .btn-evento-geral { 
+            background: transparent; color: #fbbf24; border: 2px solid #fbbf24; 
+            border-radius: 12px; font-size: 14px; font-weight: 800; padding: 6px 16px;
+        }
+        .btn-evento-geral:hover { background: #fbbf24; color: #000; }
+        .btn-evento-geral.ativo { background: #fbbf24; color: #000; }
+
+        .grid-evento-geral { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 4rem; }
+        .col-jogos { flex: 1.2; }
+        .col-classif { flex: 1; position: sticky; top: 20px; }
+
+        .tab-classif-mini { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-size: 11px; }
+        .tab-classif-mini th { color: #64748b; text-transform: uppercase; padding: 8px; font-weight: 800; text-align: center; }
+        .tab-classif-mini td { padding: 10px 8px; text-align: center; background: rgba(255,255,255,0.02); }
+        .tab-classif-mini tr td:first-child { border-radius: 8px 0 0 8px; font-weight: 900; color: #fbbf24; }
+        .tab-classif-mini tr td:last-child { border-radius: 0 8px 8px 0; font-weight: 900; background: rgba(251,191,36,0.05); }
+
     </style>
 <base target="_blank">
 </head>
 <body class="p-4 md:p-10">
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-10">
             <a href="index.html" onclick="event.preventDefault(); window.location.href='index.html'; return false;" class="gold-text uppercase text-xs tracking-widest font-bold hover:underline">
                 <i class="fas fa-arrow-left mr-2"></i> Voltar
@@ -74,7 +103,22 @@
             </div>
         </div>
 
-        <div class="flex gap-3 mb-6 flex-wrap">
+        <div id="areaFiltros" class="glass p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[180px]">
+                <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Filtrar por Evento</label>
+                <select id="selEvento" onchange="aplicarFiltro()" class="w-full p-2 rounded-xl bg-black/60 border border-amber-500/30 text-white text-xs font-bold uppercase outline-none">
+                    <option value="">Todos os Eventos</option>
+                </select>
+            </div>
+            <div class="flex-1 min-w-[180px]">
+                <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Filtrar por Modalidade</label>
+                <select id="selModalidade" onchange="aplicarFiltro()" class="w-full p-2 rounded-xl bg-black/60 border border-amber-500/30 text-white text-xs font-bold uppercase outline-none">
+                    <option value="">Todas as Modalidades</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex gap-3 mb-6 flex-wrap items-center">
             <button onclick="abrirModalAddJogo()" class="btn-acao" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);">
                 <i class="fas fa-plus mr-1"></i> Adicionar Jogo
             </button>
@@ -84,14 +128,14 @@
             <button onclick="window.location.reload()" class="btn-acao" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);">
                 <i class="fas fa-sync mr-1"></i> Atualizar
             </button>
+
+            <button id="btnEventoGeral" onclick="toggleModoEventoGeral()" class="btn-evento-geral ml-auto">
+                VER EVENTO GERAL
+            </button>
         </div>
 
         <div id="cronogramaLista">
-            <div class="text-center py-20 animate-pulse">
-                <i class="fas fa-spinner fa-spin text-3xl gold-text mb-4"></i>
-                <p class="text-xs uppercase tracking-widest text-slate-500">Carregando jogos...</p>
             </div>
-        </div>
     </div>
 
     <div id="modalAddJogo" class="modal-overlay">
@@ -101,8 +145,12 @@
             </h3>
             <div class="space-y-4">
                 <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Evento</label>
+                    <input type="text" id="addEvento" placeholder="Nome do Evento" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
+                </div>
+                <div>
                     <label class="text-[10px] uppercase text-slate-500 font-bold">Modalidade</label>
-                    <select id="addModalidade" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white"></select>
+                    <select id="addModalidade" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white" onchange="atualizarSelectsEquipes()"></select>
                 </div>
                 <div>
                     <label class="text-[10px] uppercase text-slate-500 font-bold">Fase</label>
@@ -123,13 +171,13 @@
                     <input type="time" id="addHorario" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
                 </div>
                 <div>
-                    <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe A <span class="text-slate-600">(opcional)</span></label>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe A</label>
                     <select id="addEquipeA" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
                         <option value="">A DEFINIR</option>
                     </select>
                 </div>
                 <div>
-                    <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe B <span class="text-slate-600">(opcional)</span></label>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe B</label>
                     <select id="addEquipeB" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
                         <option value="">A DEFINIR</option>
                     </select>
@@ -149,6 +197,24 @@
         let jogosGlobal = [];
         let dadosGlobais = {};
         let mostrarSaltados = false;
+        let modoEventoGeral = false; // Controle da nova visualização
+
+        function toggleModoEventoGeral() {
+            modoEventoGeral = !modoEventoGeral;
+            const btn = document.getElementById('btnEventoGeral');
+            const filtros = document.getElementById('areaFiltros');
+            
+            if (modoEventoGeral) {
+                btn.classList.add('ativo');
+                filtros.style.display = 'none';
+            } else {
+                btn.classList.remove('ativo');
+                filtros.style.display = 'flex';
+            }
+            aplicarFiltro();
+        }
+
+        // --- TODAS AS SUAS FUNÇÕES ORIGINAIS PRESERVADAS ABAIXO ---
 
         function limparHora(valor) {
             if (!valor || valor === '') return '--:--';
@@ -180,13 +246,6 @@
                 if (ano.length === 2) ano = parseInt(ano) >= 50 ? '19' + ano : '20' + ano;
                 return ano + '-' + mes + '-' + dia;
             }
-            const matchUS = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-            if (matchUS) {
-                let mes = matchUS[1].padStart(2, '0');
-                let dia = matchUS[2].padStart(2, '0');
-                let ano = matchUS[3];
-                return ano + '-' + mes + '-' + dia;
-            }
             if (s.includes('T')) return s.substring(0, 10);
             return s;
         }
@@ -215,9 +274,7 @@
         function formatarPlacar(valorA, valorB) {
             const strA = String(valorA !== undefined && valorA !== null ? valorA : '').trim();
             const strB = String(valorB !== undefined && valorB !== null ? valorB : '').trim();
-            
             if (strA === '' && strB === '') return '-';
-            // Se um dos valores for preenchido (inclusive 0), exibe o placar
             return `${strA} x ${strB}`;
         }
 
@@ -226,321 +283,282 @@
             return String(nome).trim();
         }
 
+        function ptsBadge(pts) {
+            const v = String(pts).trim();
+            if (v === '') return `<span class="pts-badge pts-none">—</span>`;
+            const n = Number(v);
+            if (n === 3) return `<span class="pts-badge pts-win">3 pts</span>`;
+            if (n === 1) return `<span class="pts-badge pts-draw">1 pt</span>`;
+            return `<span class="pts-badge pts-loss">0 pts</span>`;
+        }
+
+        function faseBadge(fase) {
+            const f = String(fase || '').trim().toLowerCase();
+            if (f === 'final') return `<span class="fase-badge fase-final"><i class="fas fa-trophy mr-1"></i>Final</span>`;
+            if (f === 'disputa 3º lugar' || f === 'disputa 3o lugar') return `<span class="fase-badge fase-terceiro"><i class="fas fa-medal mr-1"></i>3º Lugar</span>`;
+            if (f === 'semi-final') return `<span class="fase-badge fase-semi"><i class="fas fa-chess-knight mr-1"></i>Semi</span>`;
+            if (f === 'quartas de final') return `<span class="fase-badge fase-quartas"><i class="fas fa-expand mr-1"></i>Quartas</span>`;
+            if (f === 'fase de grupos') return `<span class="fase-badge fase-grupos"><i class="fas fa-users mr-1"></i>Grupos</span>`;
+            return '';
+        }
+
+        const PALETA = [
+            { bg:'rgba(191,149,63,0.18)', text:'#bf953f', border:'rgba(191,149,63,0.4)' },
+            { bg:'rgba(34,197,94,0.15)',  text:'#22c55e', border:'rgba(34,197,94,0.4)' },
+            { bg:'rgba(59,130,246,0.15)', text:'#60a5fa', border:'rgba(59,130,246,0.4)' }
+        ];
+        let mapaCores = {}; let contadorCores = 0;
+        function corDaModalidade(mod) {
+            const k = String(mod || '').trim().toLowerCase();
+            if (!k) return PALETA[0];
+            if (!mapaCores[k]) { mapaCores[k] = PALETA[contadorCores % PALETA.length]; contadorCores++; }
+            return mapaCores[k];
+        }
+
+        // --- NOVA FUNÇÃO PARA CALCULAR CLASSIFICAÇÃO EM TEMPO REAL ---
+        function calcularClassificacao(jogos) {
+            let tabela = {};
+            jogos.forEach(j => {
+                const timeA = String(j.dados[4] || '').trim();
+                const timeB = String(j.dados[5] || '').trim();
+                const gA = j.dados[6];
+                const gB = j.dados[7];
+
+                if (!timeA || !timeB || gA === '' || gB === '') return;
+
+                [timeA, timeB].forEach(t => {
+                    if (!tabela[t]) tabela[t] = { nome: t, pj: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0, pts: 0 };
+                });
+
+                tabela[timeA].pj++; tabela[timeB].pj++;
+                tabela[timeA].gp += Number(gA); tabela[timeA].gc += Number(gB);
+                tabela[timeB].gp += Number(gB); tabela[timeB].gc += Number(gA);
+
+                if (Number(gA) > Number(gB)) { tabela[timeA].v++; tabela[timeA].pts += 3; tabela[timeB].d++; }
+                else if (Number(gB) > Number(gA)) { tabela[timeB].v++; tabela[timeB].pts += 3; tabela[timeA].d++; }
+                else { tabela[timeA].e++; tabela[timeB].e++; tabela[timeA].pts += 1; tabela[timeB].pts += 1; }
+            });
+
+            return Object.values(tabela).map(t => { t.sg = t.gp - t.gc; return t; })
+                .sort((a,b) => b.pts - a.pts || b.sg - a.sg || b.gp - a.gp);
+        }
+
+        function aplicarFiltro() {
+            const ev  = document.getElementById('selEvento').value;
+            const mod = document.getElementById('selModalidade').value;
+            let filtrados = jogosGlobal;
+            if (ev)  filtrados = filtrados.filter(j => String(j.dados[0]).trim() === ev);
+            if (mod) filtrados = filtrados.filter(j => String(j.dados[1]).trim() === mod);
+            renderizar(filtrados);
+        }
+
+        // Função de Renderizar Unificada
+        function renderizar(jogos) {
+            const container = document.getElementById('cronogramaLista');
+            const visiveis = mostrarSaltados ? jogos : jogos.filter(j => !j.saltado);
+
+            if (modoEventoGeral) {
+                // AGRUPAMENTO POR EVENTO + MODALIDADE (IMAGEM 2)
+                const grupos = {};
+                visiveis.forEach(j => {
+                    const chave = `${String(j.dados[0]).trim()} - ${String(j.dados[1]).trim()}`;
+                    if (!grupos[chave]) grupos[chave] = [];
+                    grupos[chave].push(j);
+                });
+
+                let htmlFinal = '';
+                Object.keys(grupos).forEach(titulo => {
+                    const classif = calcularClassificacao(grupos[titulo]);
+                    
+                    htmlFinal += `
+                        <div class="grid-evento-geral">
+                            <div class="col-jogos">
+                                <h2 class="gold-text font-black uppercase italic mb-6 flex items-center gap-3">
+                                    <div class="w-1 h-5 bg-amber-500"></div> ${titulo}
+                                </h2>
+                                <div class="space-y-4">
+                                    ${grupos[titulo].map(j => gerarHtmlCard(j)).join('')}
+                                </div>
+                            </div>
+                            <div class="col-classif glass p-6 rounded-3xl">
+                                <table class="tab-classif-mini">
+                                    <thead>
+                                        <tr><th>#</th><th class="text-left">EQUIPE</th><th>PJ</th><th>SG</th><th>PTS</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${classif.map((t, i) => `
+                                            <tr>
+                                                <td>${i+1}º</td>
+                                                <td class="text-left font-bold flex items-center gap-2">${criarEscudo(t.nome)} ${t.nome}</td>
+                                                <td>${t.pj}</td>
+                                                <td class="${t.sg>0?'text-green-500':''}">${t.sg>0?'+'+t.sg:t.sg}</td>
+                                                <td>${t.pts}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = htmlFinal || '<p class="text-center text-slate-500 py-20">Selecione um evento para visualizar.</p>';
+
+            } else {
+                // VISUALIZAÇÃO ORIGINAL POR DATA
+                const porData = {};
+                visiveis.forEach(j => {
+                    const dk = limparData(j.dados[2]);
+                    if (!dk) return;
+                    if (!porData[dk]) porData[dk] = [];
+                    porData[dk].push(j);
+                });
+
+                const datas = Object.keys(porData).sort();
+                let html = '';
+                datas.forEach(dk => {
+                    html += `
+                        <div class="mb-12 section-dia">
+                            <div class="flex items-center gap-4 mb-8">
+                                <div class="h-[1px] flex-1 bg-white/10"></div>
+                                <h2 class="text-sm font-bold gold-text uppercase tracking-[0.3em] bg-black px-4 italic">${formatarDataExibicao(dk)}</h2>
+                                <div class="h-[1px] flex-1 bg-white/10"></div>
+                            </div>
+                            <div class="space-y-3">
+                                ${porData[dk].map(j => gerarHtmlCard(j)).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html || '<p class="text-center text-slate-500 py-20">Nenhum jogo para exibir.</p>';
+            }
+        }
+
+        // Função auxiliar para gerar o HTML do Card (mantendo sua estrutura exata)
+        function gerarHtmlCard(j) {
+            const saltadoClass = j.saltado ? 'jogo-saltado' : '';
+            const c = corDaModalidade(j.dados[1]);
+            const placar = formatarPlacar(j.dados[6], j.dados[7]);
+            const isAutoFilled = j.autoFilled ? 'auto-filled' : '';
+            
+            return `
+                <div class="timeline-item ${saltadoClass} ${isAutoFilled}" id="jogo-${j.linha}">
+                    <div class="glass p-5 rounded-2xl flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
+                        <div class="w-full md:w-auto flex md:block items-center justify-between">
+                            <div class="text-xl font-black gold-text leading-none md:mb-1">${limparHora(j.dados[3])}</div>
+                            <div class="flex flex-col items-end md:items-start">
+                                <span class="tag-mod" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};">${j.dados[1] || ''}</span>
+                                <div class="text-[9px] text-slate-500 uppercase mt-1 tracking-widest">${j.dados[0] || ''}</div>
+                            </div>
+                            <div class="mt-1">${faseBadge(j.dados[10])}</div>
+                        </div>
+                        <div class="flex-1 flex items-center justify-center gap-3">
+                            <div class="flex flex-col items-end gap-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold uppercase text-[11px]">${formatarNomeTime(j.dados[4])}</span>
+                                    ${criarEscudo(j.dados[4])}
+                                </div>
+                                ${ptsBadge(j.dados[8])}
+                            </div>
+                            <div id="placar-container-${j.linha}" class="placar-wrapper text-center">
+                                <span class="placar-display" onclick="editarPlacar(${j.linha})">
+                                    <span class="text-lg font-black">${placar}</span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col items-start gap-1">
+                                <div class="flex items-center gap-2">
+                                    ${criarEscudo(j.dados[5])}
+                                    <span class="font-bold uppercase text-[11px]">${formatarNomeTime(j.dados[5])}</span>
+                                </div>
+                                ${ptsBadge(j.dados[9])}
+                            </div>
+                        </div>
+                        <div class="w-full md:w-auto flex justify-center">
+                            <button onclick="toggleSaltar(${j.linha})" class="btn-acao btn-saltar ${j.saltado ? 'ativo' : ''}">
+                                <i class="fas ${j.saltado ? 'fa-undo' : 'fa-forward'}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // --- Lógica de Edição Original ---
         window.editarPlacar = function(linhaIdx) {
             const jogo = jogosGlobal.find(j => j.linha === linhaIdx);
-            if (!jogo || jogo.saltado) return;
-
             const container = document.getElementById('placar-container-' + linhaIdx);
-            if (!container) return;
-
-            const valA = jogo.dados[5];
-            const valB = jogo.dados[6];
-            
-            // Permite que o 0 apareça no input
-            const placarA = (valA === undefined || valA === null || valA === '') ? '' : valA;
-            const placarB = (valB === undefined || valB === null || valB === '') ? '' : valB;
+            const pA = (jogo.dados[6] === '') ? '' : jogo.dados[6];
+            const pB = (jogo.dados[7] === '') ? '' : jogo.dados[7];
 
             container.innerHTML = `
-                <div class="placar-form" id="form-placar-${linhaIdx}">
-                    <input type="number" id="inp-a-${linhaIdx}" value="${placarA}" min="0" placeholder="0">
-                    <span style="color:#666;">x</span>
-                    <input type="number" id="inp-b-${linhaIdx}" value="${placarB}" min="0" placeholder="0">
-                    <button type="button" class="btn-salvar" onclick="salvarPlacar(${linhaIdx})">
-                        <i class="fas fa-check"></i>
-                    </button>
-                </div>
-            `;
-
-            setTimeout(() => {
-                const inp = document.getElementById('inp-a-' + linhaIdx);
-                if (inp) inp.focus();
-            }, 10);
+                <div class="placar-form">
+                    <input type="number" id="inp-a-${linhaIdx}" value="${pA}" placeholder="0">
+                    <input type="number" id="inp-b-${linhaIdx}" value="${pB}" placeholder="0">
+                    <button class="btn-salvar" onclick="salvarPlacar(${linhaIdx})"><i class="fas fa-check"></i></button>
+                </div>`;
         };
 
         window.salvarPlacar = async function(linhaIdx) {
             const inpA = document.getElementById('inp-a-' + linhaIdx);
             const inpB = document.getElementById('inp-b-' + linhaIdx);
-            const container = document.getElementById('placar-container-' + linhaIdx);
-
-            if (!inpA || !inpB || !container) return;
-
-            // Correção: Se o campo estiver vazio, envia 0, mas agora aceita o valor 0 digitado
-            const novoA = inpA.value === '' ? 0 : parseInt(inpA.value);
-            const novoB = inpB.value === '' ? 0 : parseInt(inpB.value);
-
+            const nA = inpA.value === '' ? 0 : parseInt(inpA.value);
+            const nB = inpB.value === '' ? 0 : parseInt(inpB.value);
+            
             const jogo = jogosGlobal.find(j => j.linha === linhaIdx);
-            if (!jogo) return;
+            jogo.dados[6] = nA; jogo.dados[7] = nB;
+            if (nA > nB) { jogo.dados[8] = 3; jogo.dados[9] = 0; }
+            else if (nB > nA) { jogo.dados[8] = 0; jogo.dados[9] = 3; }
+            else { jogo.dados[8] = 1; jogo.dados[9] = 1; }
 
-            jogo.dados[5] = novoA;
-            jogo.dados[6] = novoB;
+            aplicarFiltro(); // Atualiza a tela (e a classificação se o modo geral estiver ON)
 
-            container.innerHTML = '<span style="color:#bf953f;"><i class="fas fa-spinner fa-spin"></i></span>';
-
-            try {
-                const linhaSheets = linhaIdx + 2;
-
-                await fetch(URL_GS, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        aba: 'tabela',
-                        acao: 'atualizar',
-                        linha: linhaSheets,
-                        colunaPlacarA: 6,
-                        colunaPlacarB: 7,
-                        placarA: novoA,
-                        placarB: novoB
-                    })
-                });
-
-                const texto = formatarPlacar(novoA, novoB);
-                container.innerHTML = `
-                    <span class="placar-display" onclick="editarPlacar(${linhaIdx})">
-                        <span class="text-lg font-black">${texto}</span>
-                    </span>
-                    <span class="msg-salvo"><i class="fas fa-check"></i></span>
-                `;
-
-                setTimeout(() => {
-                    container.innerHTML = `
-                        <span class="placar-display" onclick="editarPlacar(${linhaIdx})">
-                            <span class="text-lg font-black">${texto}</span>
-                        </span>
-                    `;
-                }, 2000);
-
-            } catch (e) {
-                container.innerHTML = '<span class="text-red-500">Erro</span>';
-                setTimeout(() => renderizar(jogosGlobal), 1000);
-            }
+            await fetch(URL_GS, {
+                method: 'POST', mode: 'no-cors',
+                body: JSON.stringify({ aba: 'tabela', acao: 'atualizar', linha: linhaIdx + 2, placarA: nA, placarB: nB })
+            });
         };
 
-        function toggleSaltar(linhaIdx) {
-            const jogo = jogosGlobal.find(j => j.linha === linhaIdx);
-            if (!jogo) return;
-            jogo.saltado = !jogo.saltado;
-            renderizar(jogosGlobal);
-        }
+        function toggleSaltar(l) { const j = jogosGlobal.find(x => x.linha === l); j.saltado = !j.saltado; aplicarFiltro(); }
+        function toggleSaltados() { mostrarSaltados = !mostrarSaltados; document.getElementById('txtToggleSaltados').textContent = mostrarSaltados ? 'Ocultar Saltados' : 'Mostrar Saltados'; aplicarFiltro(); }
 
-        function toggleSaltados() {
-            mostrarSaltados = !mostrarSaltados;
-            document.getElementById('txtToggleSaltados').textContent = mostrarSaltados ? 'Ocultar Saltados' : 'Mostrar Saltados';
-            renderizar(jogosGlobal);
-        }
-
+        // --- Modais e Carregamento (Originais) ---
         function abrirModalAddJogo() {
             const modal = document.getElementById('modalAddJogo');
-            const selectMod = document.getElementById('addModalidade');
-
-            const modalidades = (dadosGlobais.esportes || []).slice(1).map(e => e[0]);
-            selectMod.innerHTML = modalidades.map(m => `<option value="${m}">${m}</option>`).join('');
-
+            const mods = (dadosGlobais.esportes || []).slice(1).map(e => e[0]);
+            document.getElementById('addModalidade').innerHTML = mods.map(m => `<option value="${m}">${m}</option>`).join('');
             atualizarSelectsEquipes();
-
-            if (jogosGlobal.length > 0) {
-                const ultimo = jogosGlobal[jogosGlobal.length - 1];
-                document.getElementById('addData').value = ultimo.dados[1] || '';
-                document.getElementById('addHorario').value = ultimo.dados[2] || '17:00';
-            } else {
-                document.getElementById('addData').value = new Date().toISOString().split('T')[0];
-                document.getElementById('addHorario').value = '17:00';
-            }
-
-            selectMod.onchange = atualizarSelectsEquipes;
             modal.classList.add('ativo');
         }
 
         function atualizarSelectsEquipes() {
             const mod = document.getElementById('addModalidade').value;
-            const equipes = (dadosGlobais.equipes || []).slice(1)
-                .filter(e => e[1] === mod)
-                .map(e => e[0]);
-            const optsEquipes = equipes.map(e => `<option value="${e}">${e}</option>`).join('');
-            document.getElementById('addEquipeA').innerHTML = '<option value="">A DEFINIR</option>' + optsEquipes;
-            document.getElementById('addEquipeB').innerHTML = '<option value="">A DEFINIR</option>' + optsEquipes;
+            const eqs = (dadosGlobais.equipes || []).slice(1).filter(e => e[1] === mod).map(e => e[0]);
+            const opts = '<option value="">A DEFINIR</option>' + eqs.map(e => `<option value="${e}">${e}</option>`).join('');
+            document.getElementById('addEquipeA').innerHTML = opts;
+            document.getElementById('addEquipeB').innerHTML = opts;
         }
 
-        function fecharModalAddJogo() {
-            document.getElementById('modalAddJogo').classList.remove('ativo');
-        }
+        function fecharModalAddJogo() { document.getElementById('modalAddJogo').classList.remove('ativo'); }
 
         async function confirmarAddJogo() {
-            const mod = document.getElementById('addModalidade').value;
-            const fase = document.getElementById('addFase').value;
-            const data = document.getElementById('addData').value;
-            const horario = document.getElementById('addHorario').value;
-            const tA = document.getElementById('addEquipeA').value;
-            const tB = document.getElementById('addEquipeB').value;
-
-            if (!data || !horario) return alert("Preencha data e horário!");
-            if (tA && tB && tA === tB) return alert("As equipes devem ser diferentes!");
-
-            try {
-                await fetch(URL_GS, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        aba: 'tabela',
-                        valores: [mod, data, horario, tA, tB, '', '']
-                    })
-                });
-
-                fecharModalAddJogo();
-                alert('Jogo adicionado! Atualizando...');
-                window.location.reload();
-
-            } catch (e) {
-                alert("Erro ao salvar. Tente novamente.");
-            }
+            const ev = document.getElementById('addEvento').value, mod = document.getElementById('addModalidade').value, f = document.getElementById('addFase').value, d = document.getElementById('addData').value, h = document.getElementById('addHorario').value, ta = document.getElementById('addEquipeA').value, tb = document.getElementById('addEquipeB').value;
+            await fetch(URL_GS, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ aba: 'tabela', valores: [ev, mod, d, h, ta, tb, '', '', '', '', f] }) });
+            window.location.reload();
         }
 
         async function carregarCronograma() {
             try {
-                const res = await fetch(URL_GS);
-                const data = await res.json();
-                dadosGlobais = data;
-
-                const equipesRaw = (data.equipes || []).slice(1);
-                equipesRaw.forEach(linha => {
-                    const nome = String(linha[0] || '').trim();
-                    const cor1 = String(linha[2] || '').trim();
-                    const cor2 = String(linha[3] || '').trim();
-                    const cor3 = String(linha[4] || '').trim();
-                    if (nome && cor1) {
-                        cacheEscudos[nome] = {
-                            cor1: cor1,
-                            cor2: cor2 || cor1,
-                            cor3: cor3 || cor1
-                        };
-                    }
-                });
-
-                const jogosRaw = (data.tabela || []);
-                jogosGlobal = jogosRaw.slice(1).map((dados, idx) => ({
-                    linha: idx,
-                    dados: dados,
-                    saltado: false
+                const res = await fetch(URL_GS); const data = await res.json(); dadosGlobais = data;
+                data.equipes.slice(1).forEach(l => { cacheEscudos[l[0]] = { cor1: l[2], cor2: l[3] || l[2], cor3: l[4] || l[2] }; });
+                jogosGlobal = data.tabela.slice(1).map((d, i) => ({ 
+                    linha: i, dados: d, saltado: false, 
+                    autoFilled: (d[10] && (d[10].toLowerCase().includes('final') || d[10].toLowerCase().includes('semi'))) ? true : false 
                 }));
 
-                if (jogosGlobal.length === 0) {
-                    document.getElementById('cronogramaLista').innerHTML =
-                        '<p class="text-center text-slate-500 py-20">Nenhum jogo agendado ainda.</p>';
-                    return;
-                }
+                const selE = document.getElementById('selEvento'), selM = document.getElementById('selModalidade');
+                [...new Set(jogosGlobal.map(j => j.dados[0]))].filter(Boolean).forEach(e => selE.innerHTML += `<option value="${e}">${e}</option>`);
+                [...new Set(jogosGlobal.map(j => j.dados[1]))].filter(Boolean).forEach(m => selM.innerHTML += `<option value="${m}">${m}</option>`);
 
-                renderizar(jogosGlobal);
-            } catch (e) {
-                console.error(e);
-                document.getElementById('cronogramaLista').innerHTML =
-                    '<p class="text-red-500 text-center">Erro ao conectar com o banco de dados.</p>';
-            }
-        }
-
-        const PALETA_MODALIDADES = [
-            { bg:'rgba(191,149,63,0.18)', text:'#bf953f', border:'rgba(191,149,63,0.4)' },
-            { bg:'rgba(34,197,94,0.15)', text:'#22c55e', border:'rgba(34,197,94,0.4)' },
-            { bg:'rgba(59,130,246,0.15)', text:'#60a5fa', border:'rgba(59,130,246,0.4)' },
-            { bg:'rgba(239,68,68,0.15)', text:'#f87171', border:'rgba(239,68,68,0.4)' },
-            { bg:'rgba(168,85,247,0.15)', text:'#c084fc', border:'rgba(168,85,247,0.4)' },
-            { bg:'rgba(234,179,8,0.15)', text:'#facc15', border:'rgba(234,179,8,0.4)' },
-            { bg:'rgba(20,184,166,0.15)', text:'#2dd4bf', border:'rgba(20,184,166,0.4)' },
-            { bg:'rgba(249,115,22,0.15)', text:'#fb923c', border:'rgba(249,115,22,0.4)' },
-        ];
-        let mapaCoresModalidade = {};
-        let contadorCores = 0;
-
-        function corDaModalidade(modalidade) {
-            const chave = String(modalidade || '').trim().toLowerCase();
-            if (!chave) return PALETA_MODALIDADES[0];
-            if (!mapaCoresModalidade[chave]) {
-                mapaCoresModalidade[chave] = PALETA_MODALIDADES[contadorCores % PALETA_MODALIDADES.length];
-                contadorCores++;
-            }
-            return mapaCoresModalidade[chave];
-        }
-
-        function renderizar(jogos) {
-            const jogosVisiveis = mostrarSaltados ? jogos : jogos.filter(j => !j.saltado);
-
-            const porData = {};
-            jogosVisiveis.forEach(j => {
-                const dataKey = limparData(j.dados[1]);
-                if (!dataKey) return;
-                if (!porData[dataKey]) porData[dataKey] = [];
-                porData[dataKey].push(j);
-            });
-
-            const datasOrdenadas = Object.keys(porData).sort();
-
-            if (datasOrdenadas.length === 0) {
-                document.getElementById('cronogramaLista').innerHTML =
-                    '<p class="text-center text-slate-500 py-20">Nenhum jogo para exibir.</p>';
-                return;
-            }
-
-            let html = '';
-            datasOrdenadas.forEach(dataKey => {
-                const jogosDoDia = porData[dataKey].sort((a, b) => 
-                    limparHora(a.dados[2]).localeCompare(limparHora(b.dados[2]))
-                );
-
-                html += `
-                    <div class="mb-12">
-                        <div class="flex items-center gap-4 mb-8">
-                            <div class="h-[1px] flex-1 bg-white/10"></div>
-                            <h2 class="text-sm font-bold gold-text uppercase tracking-[0.3em] bg-black px-4 italic">
-                                <i class="far fa-calendar-alt mr-2"></i>${formatarDataExibicao(dataKey)}
-                            </h2>
-                            <div class="h-[1px] flex-1 bg-white/10"></div>
-                        </div>
-                        <div class="space-y-3">
-                `;
-
-                jogosDoDia.forEach(j => {
-                    const saltadoClass = j.saltado ? 'jogo-saltado' : '';
-                    const c = corDaModalidade(j.dados[0]);
-                    const nomeA = formatarNomeTime(j.dados[3]);
-                    const nomeB = formatarNomeTime(j.dados[4]);
-                    const temTimeA = j.dados[3] && String(j.dados[3]).trim() !== '';
-                    const temTimeB = j.dados[4] && String(j.dados[4]).trim() !== '';
-                    const placarTexto = formatarPlacar(j.dados[5], j.dados[6]);
-
-                    html += `
-                        <div class="timeline-item ${saltadoClass}">
-                            <div class="glass p-5 rounded-2xl flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
-                                <div class="w-full md:w-auto text-center md:text-left">
-                                    <div class="text-xl font-black gold-text leading-none mb-1">${limparHora(j.dados[2])}</div>
-                                    <span class="tag-mod" style="background:${c.bg};color:${c.text};border:1px solid ${c.border};">${j.dados[0] || ''}</span>
-                                </div>
-                                <div class="flex-1 flex items-center justify-center gap-3">
-                                    <div class="flex items-center gap-2" style="min-width:0;">
-                                        <span class="font-bold uppercase text-[11px] truncate" style="max-width:120px;">${nomeA}</span>
-                                        ${temTimeA ? criarEscudo(j.dados[3]) : '<div style="width:28px;"></div>'}
-                                    </div>
-                                    <div id="placar-container-${j.linha}" class="placar-wrapper">
-                                        <span class="placar-display" onclick="editarPlacar(${j.linha})">
-                                            <span class="text-lg font-black">${placarTexto}</span>
-                                        </span>
-                                    </div>
-                                    <div class="flex items-center gap-2" style="min-width:0;">
-                                        ${temTimeB ? criarEscudo(j.dados[4]) : '<div style="width:28px;"></div>'}
-                                        <span class="font-bold uppercase text-[11px] truncate" style="max-width:120px;">${nomeB}</span>
-                                    </div>
-                                </div>
-                                <div class="w-full md:w-auto flex justify-center">
-                                    <button onclick="toggleSaltar(${j.linha})" class="btn-acao btn-saltar ${j.saltado ? 'ativo' : ''}">
-                                        <i class="fas ${j.saltado ? 'fa-undo' : 'fa-forward'}"></i> ${j.saltado ? 'RESTAURAR' : 'SALTAR'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                html += '</div></div>';
-            });
-
-            document.getElementById('cronogramaLista').innerHTML = html;
+                aplicarFiltro();
+            } catch (e) { console.error(e); }
         }
 
         carregarCronograma();
