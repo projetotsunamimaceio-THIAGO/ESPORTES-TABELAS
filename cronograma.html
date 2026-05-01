@@ -129,6 +129,95 @@
         .tab-classif-mini tr td:first-child { border-radius: 8px 0 0 8px; font-weight: 900; color: #fbbf24; }
         .tab-classif-mini tr td:last-child { border-radius: 0 8px 8px 0; font-weight: 900; background: rgba(251,191,36,0.05); }
 
+        /* --- BOTÃO IMPRIMIR --- */
+        .btn-imprimir { background:rgba(255,255,255,0.08); color:#e2e8f0; border:1px solid rgba(255,255,255,0.2); }
+        .btn-imprimir:hover { background:rgba(255,255,255,0.15); }
+
+        /* --- ESTILOS DE IMPRESSÃO --- */
+        @media print {
+            @page { size: A4; margin: 1.5cm; }
+
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11px !important;
+            }
+
+            /* Ocultar elementos desnecessários na impressão */
+            #areaFiltros,
+            .flex.gap-3.mb-6,
+            .btn-saltar,
+            .btn-salvar,
+            .btn-del-intervalo,
+            #btnEventoGeral,
+            a[href="index.html"],
+            .modal-overlay,
+            .placar-form {
+                display: none !important;
+            }
+
+            /* Remover fundos escuros */
+            .glass {
+                background: #f8f8f8 !important;
+                border: 1px solid #ddd !important;
+                backdrop-filter: none !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Texto escuro */
+            body, span, div, p, h1, h2, h3 {
+                color: #000 !important;
+            }
+            .gold-text { color: #8a6d00 !important; }
+            .text-slate-500 { color: #555 !important; }
+            .text-slate-400 { color: #666 !important; }
+
+            /* Manter cores dos badges */
+            .tag-mod, .fase-badge, .pts-badge, .intervalo-label {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Linha do tempo */
+            .timeline-item { border-left-color: #888 !important; }
+            .timeline-item::before { background: #8a6d00 !important; box-shadow: none !important; }
+
+            /* Intervalo */
+            .intervalo-card { border-left-color: #0ea5e9 !important; }
+            .intervalo-card::before { background: #0ea5e9 !important; box-shadow: none !important; }
+            .intervalo-inner {
+                background: #e8f5fd !important;
+                border-color: #0ea5e9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .intervalo-hora, .intervalo-label, .intervalo-duracao { color: #005f8a !important; }
+
+            /* Não quebrar card no meio da página */
+            .timeline-item, .intervalo-card { page-break-inside: avoid; }
+            .section-dia { page-break-inside: avoid; }
+
+            /* Divisor de data */
+            .section-dia .flex.items-center.gap-4 div { background: transparent !important; }
+            h2.gold-text { background: transparent !important; color: #8a6d00 !important; }
+
+            /* Classificação */
+            .tab-classif-mini th { color: #333 !important; }
+            .tab-classif-mini td { background: #f5f5f5 !important; }
+
+            /* Escudos */
+            .escudo-faixa {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Layout geral */
+            .max-w-7xl { max-width: 100% !important; }
+            .grid-evento-geral { flex-direction: column; }
+            .col-classif { position: static !important; }
+        }
+
     </style>
 <base target="_blank">
 </head>
@@ -171,6 +260,10 @@
             </button>
             <button onclick="window.location.reload()" class="btn-acao" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);">
                 <i class="fas fa-sync mr-1"></i> Atualizar
+            </button>
+
+            <button onclick="window.print()" class="btn-acao btn-imprimir">
+                <i class="fas fa-print mr-1"></i> Imprimir
             </button>
 
             <button onclick="abrirModalCores()" class="btn-acao btn-cores">

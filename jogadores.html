@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jogadores - Torneio Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         body { background:#050505; color:white; font-family:'Poppins',sans-serif; min-height:100vh; }
@@ -12,13 +13,42 @@
         .glass { background:rgba(255,255,255,0.03); border:1px solid rgba(191,149,63,0.2); backdrop-filter:blur(10px); }
         input, select, textarea { background:rgba(0,0,0,0.7) !important; border:1px solid rgba(191,149,63,0.3) !important; color:white !important; outline:none; }
         input:focus, select:focus, textarea:focus { border-color:#bf953f !important; }
+        .shield-master { width: 80px; height: 100px; clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%); display: flex; }
+        .shield-inner { flex: 1; display: flex; width: 100%; height: 100%; gap: 1px; }
+        .shield-column { flex: 1; height: 100%; }
+        .player-card { transition: all 0.3s ease; }
+        .player-card:hover { transform: translateY(-4px); }
+        .team-photo { width: 100%; height: 160px; object-fit: cover; border-radius: 1rem; border: 1px solid rgba(191,149,63,0.3); }
+        .player-photo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #bf953f; }
+        .btn-gold { background: linear-gradient(135deg, #bf953f, #b38728); color: black; font-weight: 800; transition: all 0.3s; }
+        .btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(191,149,63,0.4); }
+        .btn-outline { border: 1px solid #bf953f; color: #bf953f; transition: all 0.3s; }
+        .btn-outline:hover { background: #bf953f; color: black; }
+        .upload-area { border: 2px dashed rgba(191,149,63,0.4); border-radius: 1rem; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .upload-area:hover { border-color: #bf953f; background: rgba(191,149,63,0.05); }
+        .upload-area.dragover { border-color: #bf953f; background: rgba(191,149,63,0.1); }
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .glass { border: 1px solid #ccc !important; background: white !important; color: black !important; }
+            .gold-text { color: #333 !important; }
+            .team-photo { border: 1px solid #ccc !important; }
+            .player-photo { border: 2px solid #333 !important; }
+            .shield-column { background: #ddd !important; }
+        }
+        .print-only { display: none; }
     </style>
+<base target="_blank">
 </head>
-<body class="p-6 flex flex-col items-center">
-    <div class="max-w-xl w-full">
-        <a href="index.html" class="gold-text uppercase text-xs font-bold tracking-widest hover:underline">← Voltar ao Painel</a>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <button onclick="history.back()" class="no-print gold-text uppercase text-xs font-bold tracking-widest hover:underline bg-transparent border-none cursor-pointer">
+            <i class="fas fa-arrow-left mr-2"></i> Voltar ao Painel
+        </button>
 
-        <div class="glass p-8 rounded-[2.5rem] mt-6">
+        <!-- CADASTRO EM LOTE -->
+        <div class="no-print glass p-8 rounded-[2.5rem] mt-6 mb-10">
             <h2 class="text-2xl font-black uppercase tracking-tighter mb-2 italic">
                 INSCRIÇÃO <span class="gold-text">EM LOTE</span>
             </h2>
@@ -33,35 +63,302 @@
                 </div>
                 <div>
                     <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Nomes dos Atletas (Um por linha)</label>
-                    <textarea id="jNomesLote" rows="8" placeholder="Ex:&#10;João Silva&#10;Pedro Santos&#10;Lucas Oliveira"
+                    <textarea id="jNomesLote" rows="6" placeholder="Ex:
+João Silva
+Pedro Santos
+Lucas Oliveira"
                         class="w-full p-4 rounded-2xl mt-1 text-sm resize-none"></textarea>
                 </div>
                 <div id="statusInfo" class="text-[10px] uppercase font-bold text-center h-4 gold-text"></div>
-                <button onclick="salvarLote()" id="btn" class="w-full bg-[#bf953f] text-black font-black p-5 rounded-2xl uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
+                <button onclick="salvarLote()" id="btn" class="w-full btn-gold p-5 rounded-2xl uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95">
                     FINALIZAR INSCRIÇÕES
                 </button>
             </div>
+        </div>
+
+        <!-- UPLOAD DE FOTO DA EQUIPE -->
+        <div class="no-print glass p-8 rounded-[2.5rem] mb-10">
+            <h2 class="text-2xl font-black uppercase tracking-tighter mb-6 italic">
+                ENVIAR <span class="gold-text">FOTO DA EQUIPE</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold ml-2">Selecione a Equipe</label>
+                    <select id="fotoEquipe" class="w-full p-4 rounded-2xl mt-1 text-sm mb-4">
+                        <option value="">Carregando equipes...</option>
+                    </select>
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fotoInput').click()">
+                        <i class="fas fa-cloud-upload-alt text-3xl gold-text mb-2"></i>
+                        <p class="text-sm text-slate-400">Clique ou arraste a foto aqui</p>
+                        <p class="text-[10px] text-slate-600 mt-1">JPG, PNG (máx. 10MB)</p>
+                    </div>
+                    <input type="file" id="fotoInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                    <div id="fotoPreview" class="mt-4 hidden">
+                        <img id="previewImg" src="" class="team-photo" alt="Preview">
+                        <button onclick="enviarFoto()" id="btnFoto" class="w-full btn-gold p-4 rounded-2xl uppercase tracking-widest mt-4 text-sm">
+                            CONFIRMAR ENVIO
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center">
+                    <div id="uploadStatus" class="text-center text-slate-500 text-sm"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTÃO IMPRIMIR -->
+        <div class="no-print flex justify-end mb-6">
+            <button onclick="window.print()" class="btn-outline px-6 py-3 rounded-2xl uppercase tracking-widest text-xs font-bold">
+                <i class="fas fa-print mr-2"></i> Imprimir Relatório
+            </button>
+        </div>
+
+        <!-- EXIBIÇÃO DAS EQUIPES E JOGADORES -->
+        <div id="containerEquipes" class="space-y-8">
+            <p class="text-slate-500 animate-pulse text-center">Carregando equipes e atletas...</p>
         </div>
     </div>
 
     <script>
         const URL_GS = "https://script.google.com/macros/s/AKfycbxiJPnyx4kC51xJCL26LoPkSumLkE8rHAn4f6DbF66Acy2dLiZbp_-JZjhYJSv6jXQa/exec";
         let dadosGlobais = {};
+        let fotoBase64 = null;
+        let fotoNome = '';
 
         async function carregarDados() {
             try {
                 const response = await fetch(URL_GS);
                 dadosGlobais = await response.json();
-                const select = document.getElementById('jEquipe');
                 const equipes = dadosGlobais.equipes || [];
+                const jogadores = dadosGlobais.jogadores || [];
+
+                const selectEquipe = document.getElementById('jEquipe');
+                const selectFoto = document.getElementById('fotoEquipe');
 
                 if (equipes.length > 1) {
-                    select.innerHTML = '<option value="">Selecione a Equipe</option>' +
+                    const options = '<option value="">Selecione a Equipe</option>' +
                         equipes.slice(1).map(eq => `<option value="${eq[0]}">${eq[0]}</option>`).join('');
+                    selectEquipe.innerHTML = options;
+                    selectFoto.innerHTML = options;
                 } else {
-                    select.innerHTML = '<option value="">Nenhuma equipe cadastrada</option>';
+                    selectEquipe.innerHTML = '<option value="">Nenhuma equipe cadastrada</option>';
+                    selectFoto.innerHTML = '<option value="">Nenhuma equipe cadastrada</option>';
                 }
-            } catch (e) { console.error("Erro ao carregar dados", e); }
+
+                renderizarEquipes(equipes, jogadores);
+            } catch (e) { 
+                console.error("Erro ao carregar dados", e); 
+                document.getElementById('containerEquipes').innerHTML = '<p class="text-red-500 text-center">Erro ao carregar dados.</p>';
+            }
+        }
+
+        function renderizarEquipes(equipes, jogadores) {
+            const container = document.getElementById('containerEquipes');
+
+            if (equipes.length <= 1) {
+                container.innerHTML = '<p class="text-slate-500 text-center">Nenhuma equipe cadastrada.</p>';
+                return;
+            }
+
+            const equipesData = equipes.slice(1);
+            const jogadoresData = jogadores.slice(1);
+
+            container.innerHTML = equipesData.map(eq => {
+                const nomeEquipe = eq[0];
+                const modalidade = eq[1] || '';
+                const cor1 = eq[2] || '#FF0000';
+                const cor2 = eq[3] || '#FFFFFF';
+                const cor3 = eq[4] || '#FF0000';
+                const fotoUrl = eq[5] || '';
+
+                const atletas = jogadoresData.filter(j => j[1] === nomeEquipe);
+
+                return `
+                    <div class="glass p-6 md:p-8 rounded-[2.5rem] team-section" data-team="${nomeEquipe}">
+                        <div class="flex flex-col md:flex-row items-start md:items-center gap-6 mb-6">
+                            <div class="shield-master flex-shrink-0">
+                                <div class="shield-inner">
+                                    <div class="shield-column" style="background:${cor1}"></div>
+                                    <div class="shield-column" style="background:${cor2}"></div>
+                                    <div class="shield-column" style="background:${cor3}"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-2xl md:text-3xl font-black uppercase italic gold-text">${nomeEquipe}</h3>
+                                <p class="text-slate-500 text-xs uppercase tracking-widest font-bold mt-1">${modalidade}</p>
+                                <p class="text-slate-600 text-[10px] uppercase tracking-widest font-bold mt-1">${atletas.length} Atletas</p>
+                            </div>
+                            ${fotoUrl ? `<img src="${fotoUrl}" class="team-photo md:w-48" alt="Foto ${nomeEquipe}" onerror="this.style.display='none'">` : ''}
+                        </div>
+
+                        ${atletas.length > 0 ? `
+                            <div class="border-t border-white/10 pt-6">
+                                <h4 class="text-xs uppercase text-slate-500 font-bold tracking-widest mb-4">Atletas Inscritos</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    ${atletas.map((atleta, idx) => {
+                                        const nomeAtleta = atleta[0];
+                                        const fotoAtleta = atleta[2] || '';
+                                        return `
+                                            <div class="player-card glass p-4 rounded-2xl flex items-center gap-3">
+                                                ${fotoAtleta ? 
+                                                    `<img src="${fotoAtleta}" class="player-photo flex-shrink-0" alt="${nomeAtleta}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">` :
+                                                    ''
+                                                }
+                                                <div class="w-[60px] h-[60px] rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" ${fotoAtleta ? 'style="display:none"' : ''}>
+                                                    <i class="fas fa-user text-slate-500 text-xl"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="font-bold text-sm truncate">${nomeAtleta}</p>
+                                                    <p class="text-[10px] text-slate-500 uppercase">Atleta #${idx + 1}</p>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        ` : '<p class="text-slate-600 text-sm text-center py-4">Nenhum atleta inscrito nesta equipe.</p>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        const uploadArea = document.getElementById('uploadArea');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) processarArquivo(files[0]);
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) processarArquivo(file);
+        }
+
+        function processarArquivo(file) {
+            if (file.size > 15 * 1024 * 1024) {
+                alert('Arquivo muito grande! Máximo 15MB.');
+                return;
+            }
+
+            fotoNome = file.name;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    
+                    // MANTEM TAMANHO ORIGINAL - sem reduzir!
+                    let w = img.width;
+                    let h = img.height;
+                    
+                    // Só reduz se for GIGANTE (mais de 2000px)
+                    const MAX = 2000;
+                    if (w > MAX || h > MAX) {
+                        if (w > h) {
+                            h = Math.round(h * MAX / w);
+                            w = MAX;
+                        } else {
+                            w = Math.round(w * MAX / h);
+                            h = MAX;
+                        }
+                    }
+                    
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    
+                    // Tenta PNG primeiro (sem perda de qualidade)
+                    let dataUrl = canvas.toDataURL('image/png');
+                    let formato = 'png';
+                    let qualidade = 1.0;
+                    
+                    // Se PNG for muito grande (>500KB de base64), usa JPEG 95%
+                    if (dataUrl.length > 700000) {
+                        dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                        formato = 'jpeg';
+                        qualidade = 0.95;
+                    }
+                    
+                    fotoBase64 = dataUrl;
+                    
+                    document.getElementById('previewImg').src = fotoBase64;
+                    document.getElementById('fotoPreview').classList.remove('hidden');
+                    
+                    const kb = Math.round(fotoBase64.length * 0.75 / 1024);
+                    document.getElementById('uploadStatus').innerHTML =
+                        `<span class="gold-text font-bold">Imagem pronta</span><br><span class="text-xs text-slate-500">${w}×${h}px · ${formato.toUpperCase()} · ~${kb}KB</span>`;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function enviarFoto() {
+            const equipe = document.getElementById('fotoEquipe').value;
+            if (!equipe) return alert('Selecione uma equipe!');
+            if (!fotoBase64) return alert('Selecione uma foto!');
+
+            const btn = document.getElementById('btnFoto');
+            btn.innerText = 'ENVIANDO...';
+            btn.disabled = true;
+            document.getElementById('uploadStatus').innerHTML =
+                '<span class="gold-text animate-pulse">Enviando para o servidor...</span>';
+
+            const payload = JSON.stringify({
+                acao: 'uploadFoto',
+                aba: 'equipes',
+                equipe: equipe,
+                fotoBase64: fotoBase64,
+                fotoNome: fotoNome
+            });
+
+            fetch(URL_GS, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: payload
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    document.getElementById('uploadStatus').innerHTML =
+                        '<span class="text-green-400 font-bold">✓ Foto salva com sucesso!</span>';
+                    document.getElementById('fotoPreview').classList.add('hidden');
+                    document.getElementById('fotoInput').value = '';
+                    fotoBase64 = null;
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    throw new Error(data.mensagem || 'Erro desconhecido');
+                }
+            })
+            .catch(e => {
+                console.warn('Fetch normal falhou, tentando no-cors:', e);
+                fetch(URL_GS, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: payload
+                }).then(() => {
+                    document.getElementById('uploadStatus').innerHTML =
+                        '<span class="text-yellow-400 font-bold">⚠ Enviado (aguarde alguns segundos e recarregue)</span>';
+                    setTimeout(() => location.reload(), 4000);
+                }).catch(() => {
+                    document.getElementById('uploadStatus').innerHTML =
+                        '<span class="text-red-400 font-bold">✗ Erro ao enviar. Tente novamente.</span>';
+                    btn.innerText = 'CONFIRMAR ENVIO';
+                    btn.disabled = false;
+                });
+            });
         }
 
         async function salvarLote() {
@@ -74,7 +371,6 @@
 
             const listaNomes = nomesTexto.split('\n').map(n => n.trim()).filter(n => n !== "");
 
-            // Verificar limite de 8 jogadores
             const jogadoresExistentes = (dadosGlobais.jogadores || []).slice(1)
                 .filter(j => j[1] === equipeSel).length;
 
