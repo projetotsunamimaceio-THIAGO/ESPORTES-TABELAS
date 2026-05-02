@@ -295,7 +295,7 @@
                 </div>
                 <div>
                     <label class="text-[10px] uppercase text-slate-500 font-bold">Fase</label>
-                    <select id="addFase" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
+                    <select id="addFase" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white" onchange="onFaseChange()">
                         <option value="Fase de Grupos">Fase de Grupos</option>
                         <option value="Quartas de Final">Quartas de Final</option>
                         <option value="Semi-Final">Semi-Final</option>
@@ -311,17 +311,28 @@
                     <label class="text-[10px] uppercase text-slate-500 font-bold">Horário</label>
                     <input type="time" id="addHorario" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
                 </div>
-                <div>
-                    <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe A</label>
-                    <select id="addEquipeA" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
-                        <option value="">A DEFINIR</option>
-                    </select>
+                <!-- Painel semi-final automatico -->
+                <div id="painelSemiAuto" style="display:none; background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.3); border-radius:14px; padding:14px;">
+                    <div style="color:#c084fc; font-size:10px; font-weight:800; text-transform:uppercase; margin-bottom:8px;">
+                        <i class="fas fa-magic" style="margin-right:4px;"></i> Times preenchidos pela classificação atual
+                    </div>
+                    <div id="previewSemis" style="font-size:12px; color:#e2e8f0;">Carregando...</div>
+                    <p style="color:#64748b; font-size:9px; margin-top:8px;">* Serão criados 2 jogos de semi-final automaticamente.</p>
                 </div>
-                <div>
-                    <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe B</label>
-                    <select id="addEquipeB" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
-                        <option value="">A DEFINIR</option>
-                    </select>
+                <!-- Selecao manual (oculta na semi) -->
+                <div id="painelTimesManual">
+                    <div style="margin-bottom:16px;">
+                        <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe A</label>
+                        <select id="addEquipeA" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
+                            <option value="">A DEFINIR</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase text-slate-500 font-bold">Equipe B</label>
+                        <select id="addEquipeB" class="w-full p-3 mt-1 rounded-xl bg-black/60 border border-amber-500/30 text-white">
+                            <option value="">A DEFINIR</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -858,19 +869,38 @@
             const inpB = document.getElementById('inp-b-' + linhaIdx);
             const nA = inpA.value === '' ? 0 : parseInt(inpA.value);
             const nB = inpB.value === '' ? 0 : parseInt(inpB.value);
-            
+
             const jogo = jogosGlobal.find(j => j.linha === linhaIdx);
             jogo.dados[6] = nA; jogo.dados[7] = nB;
             if (nA > nB) { jogo.dados[8] = 3; jogo.dados[9] = 0; }
             else if (nB > nA) { jogo.dados[8] = 0; jogo.dados[9] = 3; }
             else { jogo.dados[8] = 1; jogo.dados[9] = 1; }
 
-            aplicarFiltro(); // Atualiza a tela (e a classificação se o modo geral estiver ON)
+            aplicarFiltro();
 
             await fetch(URL_GS, {
                 method: 'POST', mode: 'no-cors',
                 body: JSON.stringify({ aba: 'tabela', acao: 'atualizar', linha: linhaIdx + 2, placarA: nA, placarB: nB })
             });
+
+            // Se for semi-final, recarrega dados do Sheets para atualizar Final/3o Lugar
+            const faseAtual = String(jogo.dados[10] || '').trim().toLowerCase();
+            if (faseAtual === 'semi-final' || faseAtual === 'semi' || faseAtual === 'semifinal') {
+                await new Promise(r => setTimeout(r, 1500));
+                try {
+                    const res = await fetch(URL_GS + '?t=' + Date.now());
+                    const data = await res.json();
+                    const novaTabela = data.tabela.slice(1);
+                    jogosGlobal.forEach(j => {
+                        const fase = String(j.dados[10] || '').trim().toLowerCase();
+                        if (fase === 'final' || fase === 'disputa 3º lugar' || fase === 'disputa 3o lugar' || fase === '3º lugar') {
+                            const nd = novaTabela[j.linha];
+                            if (nd) { j.dados[4] = nd[4]; j.dados[5] = nd[5]; }
+                        }
+                    });
+                    aplicarFiltro();
+                } catch(e) { console.error('Erro ao recarregar pos semi:', e); }
+            }
         };
 
         function toggleSaltar(l) { const j = jogosGlobal.find(x => x.linha === l); j.saltado = !j.saltado; aplicarFiltro(); }
@@ -882,6 +912,7 @@
             const mods = (dadosGlobais.esportes || []).slice(1).map(e => e[0]);
             document.getElementById('addModalidade').innerHTML = mods.map(m => `<option value="${m}">${m}</option>`).join('');
             atualizarSelectsEquipes();
+            onFaseChange();
             modal.classList.add('ativo');
         }
 
@@ -891,13 +922,99 @@
             const opts = '<option value="">A DEFINIR</option>' + eqs.map(e => `<option value="${e}">${e}</option>`).join('');
             document.getElementById('addEquipeA').innerHTML = opts;
             document.getElementById('addEquipeB').innerHTML = opts;
+            onFaseChange();
+        }
+
+        function onFaseChange() {
+            const fase = document.getElementById('addFase').value;
+            const ehSemi = fase === 'Semi-Final';
+            document.getElementById('painelSemiAuto').style.display = ehSemi ? 'block' : 'none';
+            document.getElementById('painelTimesManual').style.display = ehSemi ? 'none' : 'block';
+            if (ehSemi) calcularClassificacaoParaSemi();
+        }
+
+        function calcularClassificacaoParaSemi() {
+            const mod = document.getElementById('addModalidade').value;
+            const ev  = document.getElementById('addEvento').value.trim();
+            const preview = document.getElementById('previewSemis');
+
+            const tabela = (dadosGlobais.tabela || []).slice(1);
+            const jogos = tabela.filter(row => {
+                const modOk     = row[1] === mod;
+                const evOk      = !ev || row[0] === ev;
+                const temPlacar = row[6] !== '' && row[7] !== '';
+                const fase      = (row[10] || '').toLowerCase();
+                const naoFinal  = !['semi-final','semi','semifinal','final','disputa 3º lugar','3º lugar'].includes(fase);
+                return modOk && evOk && temPlacar && naoFinal;
+            });
+
+            if (jogos.length === 0) {
+                preview.innerHTML = '<span style="color:#f87171">Nenhum jogo com placar encontrado. Lance os placares da fase de grupos primeiro.</span>';
+                return;
+            }
+
+            const pts = {}, sg = {}, vit = {};
+            jogos.forEach(row => {
+                const tA = row[4], tB = row[5];
+                const pA = parseInt(row[6])||0, pB = parseInt(row[7])||0;
+                [tA,tB].forEach(t => { if (!pts[t]) { pts[t]=0; sg[t]=0; vit[t]=0; } });
+                if (pA > pB)      { pts[tA]+=3; vit[tA]++; }
+                else if (pB > pA) { pts[tB]+=3; vit[tB]++; }
+                else              { pts[tA]+=1; pts[tB]+=1; }
+                sg[tA]+=(pA-pB); sg[tB]+=(pB-pA);
+            });
+
+            const cl = Object.keys(pts).sort((a,b) => {
+                if (pts[b]!==pts[a]) return pts[b]-pts[a];
+                if (sg[b]!==sg[a])  return sg[b]-sg[a];
+                return vit[b]-vit[a];
+            });
+
+            if (cl.length < 4) {
+                preview.innerHTML = '<span style="color:#f87171">São necessários 4 times. Encontrados: ' + cl.length + ' (' + cl.join(', ') + ')</span>';
+                return;
+            }
+
+            window._semiCl = cl;
+            preview.innerHTML =
+                '<div style="margin-bottom:8px;padding:8px 12px;background:rgba(168,85,247,0.12);border-radius:10px;">' +
+                    '<div style="color:#c084fc;font-size:9px;font-weight:800;text-transform:uppercase;margin-bottom:4px;">JOGO 1</div>' +
+                    '<div style="font-weight:800;font-size:13px;">' + cl[0] + ' <span style="color:#64748b;font-size:10px;">vs</span> ' + cl[3] + '</div>' +
+                    '<div style="color:#64748b;font-size:9px;">1º colocado vs 4º colocado</div>' +
+                '</div>' +
+                '<div style="padding:8px 12px;background:rgba(168,85,247,0.12);border-radius:10px;">' +
+                    '<div style="color:#c084fc;font-size:9px;font-weight:800;text-transform:uppercase;margin-bottom:4px;">JOGO 2</div>' +
+                    '<div style="font-weight:800;font-size:13px;">' + cl[1] + ' <span style="color:#64748b;font-size:10px;">vs</span> ' + cl[2] + '</div>' +
+                    '<div style="color:#64748b;font-size:9px;">2º colocado vs 3º colocado</div>' +
+                '</div>';
         }
 
         function fecharModalAddJogo() { document.getElementById('modalAddJogo').classList.remove('ativo'); }
 
         async function confirmarAddJogo() {
-            const ev = document.getElementById('addEvento').value, mod = document.getElementById('addModalidade').value, f = document.getElementById('addFase').value, d = document.getElementById('addData').value, h = document.getElementById('addHorario').value, ta = document.getElementById('addEquipeA').value, tb = document.getElementById('addEquipeB').value;
-            await fetch(URL_GS, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ aba: 'tabela', valores: [ev, mod, d, h, ta, tb, '', '', '', '', f] }) });
+            const ev  = document.getElementById('addEvento').value;
+            const mod = document.getElementById('addModalidade').value;
+            const f   = document.getElementById('addFase').value;
+            const d   = document.getElementById('addData').value;
+            const h   = document.getElementById('addHorario').value;
+            if (!ev || !mod || !d || !h) return alert('Preencha evento, modalidade, data e horário!');
+
+            if (f === 'Semi-Final') {
+                const cl = window._semiCl;
+                if (!cl || cl.length < 4) return alert('Não foi possível calcular a classificação.');
+                function somarMin(hora, min) {
+                    let [hh,mm] = hora.split(':').map(Number);
+                    mm+=min; while(mm>=60){mm-=60;hh++;}
+                    return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+                }
+                const h2 = somarMin(h, 20);
+                await fetch(URL_GS, { method:'POST', mode:'no-cors', body: JSON.stringify({ aba:'tabela', valores:[ev,mod,d,h, cl[0],cl[3],'','','','','Semi-Final'] }) });
+                await fetch(URL_GS, { method:'POST', mode:'no-cors', body: JSON.stringify({ aba:'tabela', valores:[ev,mod,d,h2,cl[1],cl[2],'','','','','Semi-Final'] }) });
+            } else {
+                const ta = document.getElementById('addEquipeA').value;
+                const tb = document.getElementById('addEquipeB').value;
+                await fetch(URL_GS, { method:'POST', mode:'no-cors', body: JSON.stringify({ aba:'tabela', valores:[ev,mod,d,h,ta,tb,'','','','',f] }) });
+            }
             window.location.reload();
         }
 

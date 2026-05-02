@@ -160,6 +160,17 @@
     <div id="modalAddJogo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="glass p-8 rounded-[2rem] max-w-md w-full">
             <h3 class="text-xl font-black uppercase tracking-tighter mb-6 italic gold-text">ADICIONAR JOGO</h3>
+
+            <!-- Botão de atalho: Semi-Final Automática -->
+            <div id="btnSemiAutoWrap" class="mb-4">
+                <button onclick="gerarSemiFinaisAutomaticas()" class="w-full py-2 rounded-xl text-xs font-bold uppercase" style="background:rgba(191,149,63,0.2);color:#bf953f;border:1px solid rgba(191,149,63,0.4);">
+                    <i class="fas fa-magic mr-2"></i> GERAR SEMI-FINAIS AUTOMÁTICAS (1º vs 4º · 2º vs 3º)
+                </button>
+                <p class="text-[9px] text-slate-500 mt-1 ml-1">* Lê a classificação atual e cria os dois confrontos automaticamente.</p>
+            </div>
+
+            <div class="text-[10px] text-slate-400 text-center mb-3 uppercase tracking-widest">— ou adicionar manualmente —</div>
+
             <div class="space-y-4">
                 <div>
                     <label class="text-[10px] uppercase text-slate-500 font-bold">Fase</label>
@@ -310,6 +321,88 @@
             renderizarPrevia();
         }
 
+        // ─── SEMI-FINAL AUTOMÁTICA (1º vs 4º · 2º vs 3º) ──────────────
+        async function gerarSemiFinaisAutomaticas() {
+            const mod = document.getElementById('selModalidade').value;
+            const evento = document.getElementById('nomeEvento').value.trim();
+            if (!mod) return alert("Selecione a modalidade primeiro!");
+
+            let tabela = [];
+            try {
+                const res = await fetch(URL_GS);
+                const dados = await res.json();
+                tabela = (dados.tabela || []).slice(1);
+            } catch(e) {
+                return alert("Erro ao buscar classificação. Verifique a conexão.");
+            }
+
+            // Filtra jogos com placar preenchido, exclui semi/final
+            const jogosFiltrados = tabela.filter(row => {
+                const modOk    = row[1] === mod;
+                const eventoOk = !evento || row[0] === evento;
+                const temPlacar = row[6] !== '' && row[6] !== undefined && row[7] !== '' && row[7] !== undefined;
+                const faseStr  = (row[3] || '').toLowerCase();
+                const faseOk   = !['semi','final','semi-final','semifinal'].includes(faseStr);
+                return modOk && eventoOk && temPlacar && faseOk;
+            });
+
+            if (jogosFiltrados.length === 0) {
+                return alert("Nenhum jogo com placar encontrado para essa modalidade/evento.\n\nVerifique se os jogos da fase de grupos já foram registrados com placar.");
+            }
+
+            // Calcula pontos, saldo de gols e vitórias
+            const pontos = {}, vitorias = {}, saldoGols = {};
+            jogosFiltrados.forEach(row => {
+                const tA = row[4], tB = row[5];
+                const pA = parseInt(row[6]) || 0, pB = parseInt(row[7]) || 0;
+                [tA, tB].forEach(t => { if (!pontos[t]) { pontos[t]=0; vitorias[t]=0; saldoGols[t]=0; } });
+                if (pA > pB)      { pontos[tA]+=3; vitorias[tA]++; }
+                else if (pB > pA) { pontos[tB]+=3; vitorias[tB]++; }
+                else              { pontos[tA]+=1;  pontos[tB]+=1; }
+                saldoGols[tA] += (pA - pB);
+                saldoGols[tB] += (pB - pA);
+            });
+
+            // Ordena: pontos → saldo → vitórias
+            const classificacao = Object.keys(pontos).sort((a, b) => {
+                if (pontos[b] !== pontos[a]) return pontos[b] - pontos[a];
+                if (saldoGols[b] !== saldoGols[a]) return saldoGols[b] - saldoGols[a];
+                return vitorias[b] - vitorias[a];
+            });
+
+            if (classificacao.length < 4) {
+                return alert(`Apenas ${classificacao.length} times encontrados.\nSão necessários 4 times para semi-finais.\n\nEncontrados: ${classificacao.join(', ')}`);
+            }
+
+            const primeiro = classificacao[0], segundo  = classificacao[1];
+            const terceiro = classificacao[2], quarto   = classificacao[3];
+
+            // Horário baseado no último jogo da lista
+            const ult = listaJogosGerados.filter(j => j.tipo !== 'intervalo');
+            let dataRef = document.getElementById('dataInicio').value || '';
+            let horaRef = document.getElementById('horaInicio').value || '17:00';
+            if (ult.length > 0) { dataRef = ult[ult.length-1].data || dataRef; horaRef = ult[ult.length-1].horario || horaRef; }
+
+            const duracao   = parseInt(document.getElementById('duracaoPartida').value) || 8;
+            const intervalo = parseInt(document.getElementById('intervalo').value) || 2;
+
+            function somarMinutos(hora, mins) {
+                let [h, m] = hora.split(':').map(Number);
+                m += mins; while (m >= 60) { m -= 60; h++; }
+                return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            }
+
+            const hora1 = somarMinutos(horaRef, duracao + intervalo);
+            const hora2 = somarMinutos(hora1,   duracao + intervalo);
+
+            listaJogosGerados.push({ mod, data:dataRef, horario:hora1, tA:primeiro, tB:quarto,   fase:'Semi-Final', grupo:'' });
+            listaJogosGerados.push({ mod, data:dataRef, horario:hora2, tA:segundo,  tB:terceiro, fase:'Semi-Final', grupo:'' });
+
+            fecharModalAddJogo();
+            renderizarPrevia();
+            alert(`✅ Semi-Finais geradas!\n\n🥇 ${primeiro}  vs  ${quarto} 🥉🥉\n🥈 ${segundo}  vs  ${terceiro} 🥉`);
+        }
+
         function recalcularHorarios() {
             const horaInic = document.getElementById('horaInicio').value;
             const duracao  = parseInt(document.getElementById('duracaoPartida').value);
@@ -401,9 +494,18 @@
                 let clGeral=[];
                 grupos.forEach(gr=>clGeral=clGeral.concat(gr.slice(0,cl)));
                 const total=clGeral.length;
-                let fases=total<=2?['Final']:total<=4?['Semi','Final']:total<=8?['Quartas','Semi','Final']:['Oitavas','Quartas','Semi','Final'];
-                let rest=embaralhar([...clGeral]);
-                fases.forEach(fase=>{ const prox=[]; for(let i=0;i<rest.length;i+=2){if(i+1<rest.length){adicionarJogo(fase,rest[i],rest[i+1]);prox.push(rest[i]);}} rest=prox; });
+                let fases=total<=2?['Final']:total<=4?['Semi-Final','Final']:total<=8?['Quartas','Semi-Final','Final']:['Oitavas','Quartas','Semi-Final','Final'];
+                // Chaveamento seeded: 1º vs último, 2º vs penúltimo, etc.
+                let rest=[...clGeral];
+                fases.forEach(fase=>{
+                    const prox=[];
+                    const metade=Math.floor(rest.length/2);
+                    for(let i=0;i<metade;i++){
+                        adicionarJogo(fase,rest[i],rest[rest.length-1-i]);
+                        prox.push(rest[i]);
+                    }
+                    rest=prox;
+                });
             }
 
             renderizarPrevia();
@@ -469,7 +571,7 @@
                         body: JSON.stringify({
                             aba: 'tabela',
                             // [evento, modalidade, data, horario, equipeA, equipeB, placarA, placarB, ptsA, ptsB]
-                            valores: [evento, jogo.mod, jogo.data, jogo.horario, jogo.tA, jogo.tB, '', '', '', '']
+                            valores: [evento, jogo.mod, jogo.data, jogo.horario, jogo.tA, jogo.tB, '', '', '', '', jogo.fase || '']
                         })
                     });
                 }
